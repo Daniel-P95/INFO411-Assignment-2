@@ -5,7 +5,7 @@ using Markdown
 using InteractiveUtils
 
 # ╔═╡ 04e03fd4-63e5-4b54-a4ea-21927e8cd5cb
-using DelimitedFiles, DataFrames, CategoricalArrays, Missings, Plots, Statistics, Distances, StatsPlots
+using DelimitedFiles, DataFrames, CategoricalArrays, Missings, Plots, Statistics, Distances, StatsPlots, Gadfly, Compose, ColorSchemes, Distributions
 
 # ╔═╡ 002a45aa-39ff-4b84-bd75-ee9eded6cd39
 using Impute: DeclareMissings, apply, Impute, impute!
@@ -13,96 +13,324 @@ using Impute: DeclareMissings, apply, Impute, impute!
 # ╔═╡ 9591bd52-32d4-4a2a-ad06-5169877b9f4c
 using Interact, Blink
 
+# ╔═╡ 399af092-5f76-4ef8-800c-9fd3004a2f06
+md"""
+# Data Imputation
+"""
+
+# ╔═╡ a43e5a1a-1b3e-4880-886f-22b8aecdcac6
+md"""
+## Callback: Loading of source data and gap discovery
+This first section is reproduced from the EDA.jl file in the repository which explores basic aspects of the DS2 dataset.
+### Loading of source data
+The data from the DS2 datasets is loaded in the three code chunks that follow. Renaming of columns and basic missing data targetting is applied. The datasets that have been chosen for imputation:
+- processed.switzerland.data
+- processed.hungarian.data
+- processed.va.data
+"""
+
 # ╔═╡ 5f7a7820-5c1e-11ee-1767-5f554e5a74b9
 begin
-	switzerland_t_data = readdlm("processed.switzerland.data", ',', header=false)
+	# Change pathway as necessary
+	switzerland_t_data = readdlm("C:/Online Storage/OneDrive/2. Education/1. University of Otago/Master of Business Data Science/Papers/INFO411 - Machine Learning and Data Mining/Assignments/Assignment 2/Source data/heart+disease/processed.switzerland.data", ',', header=false)
+	# Raw data
 	raw_switzerland_data = DataFrame(switzerland_t_data, :auto)
-	named_switzerland = rename(raw_switzerland_data, :x1 => :"Age", :x2 => :"Sex", :x3 => :"Chest Pain Type", :x4 => :"Resting Blood Pressure", :x5 => :"Serum Cholesterol in mg/dl", :x6 => :"Fasting Blood Sugar > 120 mg/dl", :x7 => :"Resting Electrocaridographic Results", :x8 => :"Maximum Heart Rate Achieved", :x9 => :"Exercise Induced Angina", :x10 => :"Oldpeak = ST Depression Induced by Exercuse Relative to Rest", :x11 => :"Slope of the Peak Exercise ST Segment", :x12 => :"Number of Major Vessels colored by flourosopy", :x13 => :"Thal: 3 = Normal; 6 = Fixed Defect; 7 = Reversable Defect", :x14 => :"Presence of heart disease")
-
-	
+	# Renaming of columns
+	named_switzerland = rename(raw_switzerland_data, :x1 => :"Age", :x2 => :"Sex", :x3 => :"Chest Pain Type", :x4 => :"Resting Blood Pressure", :x5 => :"Serum Cholesterol in mg/dl", :x6 => :"Fasting Blood Sugar > 120 mg/dl", :x7 => :"Resting Electrocardiographic Results", :x8 => :"Maximum Heart Rate Achieved", :x9 => :"Exercise Induced Angina", :x10 => :"Oldpeak = ST Depression Induced by ExercIse Relative to Rest", :x11 => :"Slope of the Peak Exercise ST Segment", :x12 => :"Number of Major Vessels colored by flourosopy", :x13 => :"Thal: 3 = Normal; 6 = Fixed Defect; 7 = Reversable Defect", :x14 => :"Presence of heart disease")
+	# Basic missing data targetting
 	named_switzerland = apply(named_switzerland, DeclareMissings(; values=("?")))
 end;
 
 # ╔═╡ cd5b9656-71d5-4de9-9ca4-39db0c5bbe4b
 begin
-	hungarian_t_data = readdlm("processed.hungarian.data", ',', header=false)
+	# Change pathway as necessary
+	hungarian_t_data = readdlm("C:/Online Storage/OneDrive/2. Education/1. University of Otago/Master of Business Data Science/Papers/INFO411 - Machine Learning and Data Mining/Assignments/Assignment 2/Source data/heart+disease/processed.hungarian.data", ',', header=false)
+	# Raw data
 	raw_hungarian_data = DataFrame(hungarian_t_data, :auto)
-	named_hungarian = rename(raw_hungarian_data, :x1 => :"Age", :x2 => :"Sex", :x3 => :"Chest Pain Type", :x4 => :"Resting Blood Pressure", :x5 => :"Serum Cholesterol in mg/dl", :x6 => :"Fasting Blood Sugar > 120 mg/dl", :x7 => :"Resting Electrocaridographic Results", :x8 => :"Maximum Heart Rate Achieved", :x9 => :"Exercise Induced Angina", :x10 => :"Oldpeak = ST Depression Induced by Exercuse Relative to Rest", :x11 => :"Slope of the Peak Exercise ST Segment", :x12 => :"Number of Major Vessels colored by flourosopy", :x13 => :"Thal: 3 = Normal; 6 = Fixed Defect; 7 = Reversable Defect", :x14 => :"Presence of heart disease")
-
-	
+	# Renaming of columns
+	named_hungarian = rename(raw_hungarian_data, :x1 => :"Age", :x2 => :"Sex", :x3 => :"Chest Pain Type", :x4 => :"Resting Blood Pressure", :x5 => :"Serum Cholesterol in mg/dl", :x6 => :"Fasting Blood Sugar > 120 mg/dl", :x7 => :"Resting Electrocardiographic Results", :x8 => :"Maximum Heart Rate Achieved", :x9 => :"Exercise Induced Angina", :x10 => :"Oldpeak = ST Depression Induced by Exercise Relative to Rest", :x11 => :"Slope of the Peak Exercise ST Segment", :x12 => :"Number of Major Vessels colored by flourosopy", :x13 => :"Thal: 3 = Normal; 6 = Fixed Defect; 7 = Reversable Defect", :x14 => :"Presence of heart disease")
+	# Basic missing data targetting
 	named_hungarian = apply(named_hungarian, DeclareMissings(; values=("?")))
 end;
 
 # ╔═╡ def0ad95-c2e2-4916-860f-6129df3fbcc2
 begin
-	va_t_data = readdlm("processed.va.data", ',', header=false)
+	# Change pathway as necessary
+	va_t_data = readdlm("C:/Online Storage/OneDrive/2. Education/1. University of Otago/Master of Business Data Science/Papers/INFO411 - Machine Learning and Data Mining/Assignments/Assignment 2/Source data/heart+disease/processed.va.data", ',', header=false)
+	# Raw data
 	raw_va_data = DataFrame(va_t_data, :auto)
-	named_va = rename(raw_va_data, :x1 => :"Age", :x2 => :"Sex", :x3 => :"Chest Pain Type", :x4 => :"Resting Blood Pressure", :x5 => :"Serum Cholesterol in mg/dl", :x6 => :"Fasting Blood Sugar > 120 mg/dl", :x7 => :"Resting Electrocaridographic Results", :x8 => :"Maximum Heart Rate Achieved", :x9 => :"Exercise Induced Angina", :x10 => :"Oldpeak = ST Depression Induced by Exercuse Relative to Rest", :x11 => :"Slope of the Peak Exercise ST Segment", :x12 => :"Number of Major Vessels colored by flourosopy", :x13 => :"Thal: 3 = Normal; 6 = Fixed Defect; 7 = Reversable Defect", :x14 => :"Presence of heart disease")
-
-	
+	# Renaming of columns
+	named_va = rename(raw_va_data, :x1 => :"Age", :x2 => :"Sex", :x3 => :"Chest Pain Type", :x4 => :"Resting Blood Pressure", :x5 => :"Serum Cholesterol in mg/dl", :x6 => :"Fasting Blood Sugar > 120 mg/dl", :x7 => :"Resting Electrocardiographic Results", :x8 => :"Maximum Heart Rate Achieved", :x9 => :"Exercise Induced Angina", :x10 => :"Oldpeak = ST Depression Induced by Exercise Relative to Rest", :x11 => :"Slope of the Peak Exercise ST Segment", :x12 => :"Number of Major Vessels colored by flourosopy", :x13 => :"Thal: 3 = Normal; 6 = Fixed Defect; 7 = Reversable Defect", :x14 => :"Presence of heart disease")
+	# Basic missing data targetting
 	named_va = apply(named_va, DeclareMissings(; values=("?")))
 end;
 
+# ╔═╡ cbf41ccd-ed79-4acb-bb6b-e70a729b796f
+md""" 
+### Heatmap of missing value locations
+Blank spaces correspond to missing values. This is a visual guide to be used for targeted data cleaning. It can be seen that in all cases, variable 12 is significantly unpopulated, with variable 13 and 11 coming in second. 
+
+These variables are:
+- 11: Slope of the Peak Exercise ST Segment.
+- 12: Number of Major Vessels colored by flourosopy.
+- 13: Thal: 3 = Normal; 6 = Fixed Defect; 7 = Reversable Defect.
+"""
+
+# ╔═╡ 346472a1-a9e2-4e7f-ad04-3b8acca8ddb9
+begin
+	p11 = heatmap(
+	        1:14, 1:200, Matrix{Bool}(ismissing.(named_va)),
+	        color=:grays, xticks = false, legend = false
+			);
+			annotate!(0.5,215, Plots.text("Va", 10, :left, :black))
+	   
+	p12 = heatmap(
+	        1:14, 1:294, Matrix{Bool}(ismissing.(named_hungarian)),
+	        color=:grays, xticks = false, legend = false
+			);
+			annotate!(0.5,325, Plots.text("Hungarian", 10, :left, :black))
+	
+	p13 = heatmap(
+	        1:14, 1:123, Matrix{Bool}(ismissing.(named_switzerland)),
+	        xlabel="Variables",
+	        color=:grays, xticks = (1:14), legend = false
+		   	);
+			annotate!(0.5,135, Plots.text("Switzerland", 10, :left, :black))
+	
+	Plots.plot(p11,p12,p13, layout = (3,1), ylabel = "Observations", legend=:right)
+end
+
+# ╔═╡ 24796dfb-790e-49d1-9186-eac96c621867
+md"""
+## Imputation
+### Setup
+The three datasets (Hungarian, Switzerland and VA) have been prepared for imputation. What follows is imputation and variable type conversion.
+"""
+
 # ╔═╡ 6d614c21-d4f1-42d0-b8f1-33b449e7a32c
-begin 
+begin
 	imputed_va = Impute.srs(named_va);
 	imputed_swiss = Impute.srs(named_switzerland);
 	imputed_hungarian = Impute.srs(named_hungarian);
 end;
 
-# ╔═╡ cc834e37-e90f-41d1-bac9-5bce07860557
+# ╔═╡ 0415356a-a0db-403e-adb2-d55721d6614d
 begin 
+	# Ordered categorical data designation: Slope of the Peak Exercise ST Segment
+	imputed_va[!,3] = categorical(imputed_va[:,3], ordered = true)
+	imputed_va[!,11] = categorical(imputed_va[:,11], ordered = true)
+	# Binary conversion
+	imputed_va[!, 2] = map(x -> x == 1.0 ? "Male" : "Female", imputed_va[!, 2])
+	imputed_va[!, 6] = map(x -> x == 1.0 ? "Yes" : "No", imputed_va[!, 6])
+	imputed_va[!, 9] = map(x -> x == 1.0 ? "Yes" : "No", imputed_va[!, 9])
+	imputed_va[!, 14] = map(x -> x == 0.0 ? "No" : "Yes", imputed_va[!, 14])
+	# Catergorical data designation
+	imputed_va[!,2] = categorical(imputed_va[:,2], ordered = false)
+	imputed_va[!,6] = categorical(imputed_va[:,6], ordered = false)
+	imputed_va[!,7] = categorical(imputed_va[:,7], ordered = false)
+	imputed_va[!,9] = categorical(imputed_va[:,9], ordered = false)
+	imputed_va[!,13] = categorical(imputed_va[:,13], ordered = false)
+	imputed_va[!,14] = categorical(imputed_va[:,14], ordered = false)
+	# Conversion from Floats to Integers
 	imputed_va[!, Not([2,6,9,10,14])] = convert.(Int64, imputed_va[:, Not([2,6,9,10,14])])
+end;
+
+# ╔═╡ e5fd0042-6edc-46bd-a643-06b2bc3c9a00
+begin 
+	# Ordered categorical data designation: Slope of the Peak Exercise ST Segment
+	imputed_swiss[!,3] = categorical(imputed_swiss[:,3], ordered = true)
+	imputed_swiss[!,11] = categorical(imputed_swiss[:,11], ordered = true)
+	# Binary conversion
+	imputed_swiss[!, 2] = map(x -> x == 1.0 ? "Male" : "Female", imputed_swiss[!, 2])
+	imputed_swiss[!, 6] = map(x -> x == 1.0 ? "Yes" : "No", imputed_swiss[!, 6])
+	imputed_swiss[!, 9] = map(x -> x == 1.0 ? "Yes" : "No", imputed_swiss[!, 9])
+	imputed_swiss[!, 14] = map(x -> x == 0.0 ? "No" : "Yes", imputed_swiss[!, 14])
+	# Catergorical data designation
+	imputed_swiss[!,2] = categorical(imputed_swiss[:,2], ordered = false)
+	imputed_swiss[!,6] = categorical(imputed_swiss[:,6], ordered = false)
+	imputed_swiss[!,7] = categorical(imputed_swiss[:,7], ordered = false)
+	imputed_swiss[!,9] = categorical(imputed_swiss[:,9], ordered = false)
+	imputed_swiss[!,13] = categorical(imputed_swiss[:,13], ordered = false)
+	imputed_swiss[!,14] = categorical(imputed_swiss[:,14], ordered = false)
+	# Conversion from Floats to Integers
 	imputed_swiss[!, Not([2,6,9,10,14])] = convert.(Int64, imputed_swiss[:, Not([2,6,9,10,14])])
+end;
+
+# ╔═╡ 3d1ac51b-73d1-470e-9af3-58f6afdb45d3
+begin 
+	# Ordered categorical data designation: Slope of the Peak Exercise ST Segment
+	imputed_hungarian[!,3] = categorical(imputed_hungarian[:,3], ordered = true)
+	imputed_hungarian[!,11] = categorical(imputed_hungarian[:,11], ordered = true)
+	# Binary conversion
+	imputed_hungarian[!, 2] = map(x -> x == 1.0 ? "Male" : "Female", imputed_hungarian[!, 2])
+	imputed_hungarian[!, 6] = map(x -> x == 1.0 ? "Yes" : "No", imputed_hungarian[!, 6])
+	imputed_hungarian[!, 9] = map(x -> x == 1.0 ? "Yes" : "No", imputed_hungarian[!, 9])
+	imputed_hungarian[!, 14] = map(x -> x == 0.0 ? "No" : "Yes", imputed_hungarian[!, 14])
+	# Catergorical data designation
+	imputed_hungarian[!,2] = categorical(imputed_hungarian[:,2], ordered = false)
+	imputed_hungarian[!,6] = categorical(imputed_hungarian[:,6], ordered = false)
+	imputed_hungarian[!,7] = categorical(imputed_hungarian[:,7], ordered = false)
+	imputed_hungarian[!,9] = categorical(imputed_hungarian[:,9], ordered = false)
+	imputed_hungarian[!,13] = categorical(imputed_hungarian[:,13], ordered = false)
+	imputed_hungarian[!,14] = categorical(imputed_hungarian[:,14], ordered = false)
+	# Conversion from Floats to Integers
 	imputed_hungarian[!, Not([2,6,9,10,14])] = convert.(Int64, imputed_hungarian[:, Not([2,6,9,10,14])])
 end;
 
+# ╔═╡ 760a0e0a-2fc1-4d54-b43e-0ab348938022
+md"""
+### Heatmap confirmation
+As a comparison and confirmation, the heatmap below shows the post-imputation results of the imputation of the three datasets. Notice that there are now zero white spaces, meaning that there is no missing data.
+"""
+
+# ╔═╡ 5ffbb9ea-f0d7-46ed-9425-1d98f1f3b75f
+begin
+	p21 = heatmap(
+	        1:14, 1:200, Matrix{Bool}(ismissing.(imputed_va)),
+	        color=:grays, xticks = false, legend = false
+			);
+			annotate!(0.5,215, Plots.text("Va", 10, :left, :black))
+	   
+	p22 = heatmap(
+	        1:14, 1:294, Matrix{Bool}(ismissing.(imputed_hungarian)),
+	        color=:grays, xticks = false, legend = false
+			);
+			annotate!(0.5,325, Plots.text("Hungarian", 10, :left, :black))
+	
+	p23 = heatmap(
+	        1:14, 1:123, Matrix{Bool}(ismissing.(imputed_swiss)),
+	        xlabel="Variables",
+	        color=:grays, xticks = (1:14), legend = false
+		   	);
+			annotate!(0.5,135, Plots.text("Switzerland", 10, :left, :black))
+	
+	Plots.plot(p21,p22,p23, layout = (3,1), ylabel = "Observations", legend=:right)
+end
+
+# ╔═╡ 936da164-f96e-4672-93a3-566bfa5e13a0
+md"""
+## Statistical profile comparison
+This section will examine with a series of figures the profiles of each of the datasets.
+### Age and Sex, and Chest Pain Type
+The first of the figures below shows that the Hungarian population represents the youngest age profile, VA the oldest, and the Swiss in the middle. The VA profile appeared to have far fewer participants, with a very small number of females which are concentrated in the 50-65 year range. The Hungarian profile seems to have a more even distribution for males and females compared to the other two datasets. The females in all cases have smaller age ranges than the males, and appear to be smaller in number.
+
+For the second figure showing a histogram of Chest Pain Type, a ranking of 4 was most common across all datasets. The freqencies decrease as the ranking moves from 4 to 1, except in the case of Hungary, where rank 2 has the second highest number of reports.
+"""
+
 # ╔═╡ fe172922-f540-47f4-aa24-29d844972922
 begin 
-	violin(["Va"], imputed_va[imputed_va."Sex" .== 1,:Age], side = :left, color = "#5377C9", ylabel = "Age", label = "Male")
-	violin!(["Va"], imputed_va[imputed_va."Sex" .== 0,:Age], side = :right, color = "#DF8A56", label = "Female")
-	violin!(["Swiss"], imputed_swiss[imputed_swiss."Sex" .== 1,:Age], label=nothing, side = :left, color = "#5377C9")
-	violin!(["Swiss"], imputed_swiss[imputed_swiss."Sex" .== 0,:Age], label=nothing, side = :right, color = "#DF8A56")
-	violin!(["Hungarian"], imputed_hungarian[imputed_hungarian."Sex" .== 1,:Age], label=nothing, side = :left, color = "#5377C9")
-	violin!(["Hungarian"], imputed_hungarian[imputed_hungarian."Sex" .== 0,:Age], label=nothing, side = :right, color = "#DF8A56")
-
+	violin(["Va"], imputed_va[imputed_va."Sex" .== "Male",:Age], side = :left, color = "#5377C9", ylabel = "Age", label = "Male")
+	violin!(["Va"], imputed_va[imputed_va."Sex" .== "Female",:Age], side = :right, color = "#DF8A56", label = "Female")
+	violin!(["Swiss"], imputed_swiss[imputed_swiss."Sex" .== "Male",:Age], label=nothing, side = :left, color = "#5377C9")
+	violin!(["Swiss"], imputed_swiss[imputed_swiss."Sex" .== "Female",:Age], label=nothing, side = :right, color = "#DF8A56")
+	violin!(["Hungarian"], imputed_hungarian[imputed_hungarian."Sex" .== "Male",:Age], label=nothing, side = :left, color = "#5377C9")
+	violin!(["Hungarian"], imputed_hungarian[imputed_hungarian."Sex" .== "Female",:Age], label=nothing, side = :right, color = "#DF8A56")
 end 
 
 # ╔═╡ 62d9373d-f062-4797-a16b-278917cbae54
 begin
-	title = plot(title = "Chest Pain Type", grid = false, showaxis = false, bottom_margin = -50Plots.px)
-	
+	# Base
+	title = StatsPlots.plot(title = "Chest Pain Type", grid = false, showaxis = false, bottom_margin = -50Plots.px)
+	# Plots
 	h1 = histogram(imputed_va[:,"Chest Pain Type"], bar_width = 1, xaxis = "Va")
 	h2 = histogram(imputed_swiss[:,"Chest Pain Type"], yaxis = false, bar_width = 1, xaxis = "Swiss")
 	h3 = histogram(imputed_hungarian[:,"Chest Pain Type"], yaxis = false, xaxis = "Hungarian")
-
-	plot(title,h1,h2,h3, layout = @layout([A{0.01h}; [B C D]]), ylim = (0,140), xticks = (1:4), legend = false, grid = false)
+	# Display
+	StatsPlots.plot(title,h1,h2,h3, layout = @layout([A{0.01h}; [B C D]]), ylim = (0,140), xticks = (1:4), legend = false, grid = false)
 end
 
-# ╔═╡ e4395679-417d-48df-b29f-f59730e5b9fc
-v = imputed_swiss[:,"Slope of the Peak Exercise ST Segment"];
+# ╔═╡ a9862ee1-5785-45a1-ba85-410aa1b2e30f
+md"""
+### Slope of the Peak Exercise ST Segment
+The figure that follows shows that for the VA. Hungarian and Swiss datasets, a flat slope (rank of 2) was most common. However, the Hungarian dataset shows a significantly higher number of respondants in the flat slope of rank 2 and almost no respondants in rank 3 (downsloping). 
+"""
 
 # ╔═╡ a227d4e0-23b7-4fe5-955b-e416a14f65ca
 begin
-	title2 = plot(title = "Slope Of Peak Exercise", grid = false, showaxis = false, bottom_margin = -50Plots.px)
-	
+	# Initiation
+	v = imputed_swiss[:,"Slope of the Peak Exercise ST Segment"]
+	title2 = StatsPlots.plot(title = "Slope Of Peak Exercise", grid = false, showaxis = false, bottom_margin = -50Plots.px)
+	# Plois
 	h4 = histogram(imputed_va[:,"Slope of the Peak Exercise ST Segment"], bar_width = 1, xaxis = "Va")
 	h5 = histogram(imputed_swiss[:,"Slope of the Peak Exercise ST Segment"], yaxis = false, bar_width = 1, xaxis = "Swiss")
 	h6 = histogram(imputed_hungarian[:,"Slope of the Peak Exercise ST Segment"], yaxis = false, xaxis = "Hungarian", bar_width = 1)
-
-	plot(title2,h4,h5,h6, layout = @layout([A{0.01h}; [B C D]]), ylim = (0,350), xticks = (1:3), legend = false, grid = false)
+	# Display
+	StatsPlots.plot(title2,h4,h5,h6, layout = @layout([A{0.01h}; [B C D]]), ylim = (0,350), xticks = (1:3), legend = false, grid = false)
 end
+
+# ╔═╡ 10018fd7-db6a-4546-8ad0-032667685f54
+md"""
+### Number of Major Vessels colored by flourosopy
+The figure below shows that in both the VA and Hungarian datasets, there were no participants that had more than 1 vessel colored by flourosopy. In the Swiss dataset, the participants had more than 1 and in a more significant quantity more than 2 vessels colored. Interestingly, the total number of participants was significantly less than either of the VA and Hungarian datasets.
+"""
 
 # ╔═╡ 55a44ba5-e6a6-4667-92ff-07a55332ab18
 begin
-	title3 = plot(title = "Number of Major Vessels colored by flourosopy", grid = false, showaxis = false, bottom_margin = -50Plots.px)
-	
+	# Initiation
+	title3 = StatsPlots.plot(title = "Number of Major Vessels colored by flourosopy", grid = false, showaxis = false, bottom_margin = -50Plots.px)
+	# Plots
 	h7 = histogram(imputed_va[:,"Number of Major Vessels colored by flourosopy"], bar_width = 1, xaxis = "Va")
 	h8 = histogram(imputed_swiss[:,"Number of Major Vessels colored by flourosopy"], bar_width = 1, yaxis = false, xaxis = "Swiss")
 	h9 = histogram(imputed_hungarian[:,"Number of Major Vessels colored by flourosopy"], yaxis = false, xaxis = "Hungarian", bar_width = 1)
-
-	plot(title3,h7,h8,h9, layout = @layout([A{0.01h}; [B C D]]), ylim = (0,350), xticks = (0:3), xlim = (0,3), legend = false, grid = false)
+	# Display
+	StatsPlots.plot(title3,h7,h8,h9, layout = @layout([A{0.01h}; [B C D]]), ylim = (0,350), xticks = (0:3), xlim = (0,3), legend = false, grid = false)
 end
+
+# ╔═╡ 2846a53f-f81c-422f-b0db-c813e2713ceb
+md"""
+### A deeper look
+The following figures will explore more measures, how they contribute to the presence of heart disease, and compare. This will be on a basis of Age and Resting Blood pressure, across the three locations.
+
+For the first location, we have VA. Here, we can see that older people with higher resting blood pressure more than not have heart disease.
+"""
+
+# ╔═╡ 7dd60210-338b-43cd-b867-be4ff2447a49
+begin 
+	p1 = Gadfly.plot(
+	    imputed_va,
+		x = :"Age",
+	    y = :"Resting Blood Pressure",
+	    color  = :"Presence of heart disease",
+	    Scale.color_discrete_manual("#5377C9", "#DF8A56"),
+		Geom.density2d(levels = 4))
+end
+
+# ╔═╡ ece8ca3b-9ea8-48cc-a00e-1208cc32e0ef
+md"""
+For the second location, we have Switzerland. Here, we can see an interesting relationship. The density of people without heart disease is concentrated, but those without are not.
+"""
+
+# ╔═╡ c315f93b-0cb9-4b35-b82f-1b21bc30481d
+begin 
+	p2 = Gadfly.plot(
+	    imputed_swiss,
+	    x = :"Age",
+	    y = :"Resting Blood Pressure",
+	    color  = :"Presence of heart disease",
+	    Scale.color_discrete_manual("#5377C9", "#DF8A56"),
+		Geom.density2d(levels = 4))
+end
+
+# ╔═╡ fb06d342-2170-4836-b475-820b584a83e0
+md"""
+For the third location, we have Hungary. Here, there is no clear relationship between age, resting blood pressure and presence of heart disease.
+"""
+
+# ╔═╡ 2ac4cb17-9de8-4bd1-83fb-7bf45e36b089
+begin 
+	p3 = Gadfly.plot(
+	    imputed_hungarian,
+	    x = :"Age",
+	    y = :"Resting Blood Pressure",
+	    color  = :"Presence of heart disease",
+	    Scale.color_discrete_manual("#5377C9", "#DF8A56"),
+		Geom.density2d(levels = 4))
+end
+
+# ╔═╡ 43f87e39-2a21-437b-bfce-dcc8c08443cb
+md"""
+## JACQUES' INTERESTING ANALYSIS
+"""
 
 # ╔═╡ 25f10b43-181e-416a-85e7-cb775857955a
 imputed_swiss
@@ -118,9 +346,13 @@ PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
 Blink = "ad839575-38b3-5650-b840-f874b8c74a25"
 CategoricalArrays = "324d7699-5711-5eae-9e2f-1d82baa6b597"
+ColorSchemes = "35d6a980-a343-548e-a6ea-1d62b119f2f4"
+Compose = "a81c6b42-2e10-5240-aca2-a61377ecd94b"
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 DelimitedFiles = "8bb1440f-4735-579b-a4ab-409b98df4dab"
 Distances = "b4f34e82-e78d-54a5-968a-f98e89d6e8f7"
+Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
+Gadfly = "c91e804a-d5a3-530f-b6f0-dfbca275c004"
 Impute = "f7bf1975-0170-51b9-8c5f-a992d46b9575"
 Interact = "c601a237-2ae4-5e1e-952c-7a85b0c7eef1"
 Missings = "e1d29d7a-bbdc-5cf2-9ac0-f12de2c33e28"
@@ -131,9 +363,13 @@ StatsPlots = "f3b207a7-027a-5e70-b257-86293d7955fd"
 [compat]
 Blink = "~0.12.8"
 CategoricalArrays = "~0.10.8"
+ColorSchemes = "~3.24.0"
+Compose = "~0.9.5"
 DataFrames = "~1.6.1"
 DelimitedFiles = "~1.9.1"
 Distances = "~0.10.9"
+Distributions = "~0.25.102"
+Gadfly = "~1.4.0"
 Impute = "~0.6.11"
 Interact = "~0.10.5"
 Missings = "~1.1.0"
@@ -147,7 +383,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.9.2"
 manifest_format = "2.0"
-project_hash = "0c9140564eb7ff848aac78199ea84a12b5f52d3a"
+project_hash = "5906f55cb95e16c2f87eed70ac46be7968c7e52c"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -329,6 +565,12 @@ deps = ["Artifacts", "Libdl"]
 uuid = "e66e0078-7015-5450-92f7-15fbd957f2ae"
 version = "1.0.5+0"
 
+[[deps.Compose]]
+deps = ["Base64", "Colors", "DataStructures", "Dates", "IterTools", "JSON", "LinearAlgebra", "Measures", "Printf", "Random", "Requires", "Statistics", "UUIDs"]
+git-tree-sha1 = "bf6570a34c850f99407b494757f5d7ad233a7257"
+uuid = "a81c6b42-2e10-5240-aca2-a61377ecd94b"
+version = "0.9.5"
+
 [[deps.ConcurrentUtilities]]
 deps = ["Serialization", "Sockets"]
 git-tree-sha1 = "5372dbbf8f0bdb8c700db5367132925c0771ef7e"
@@ -339,6 +581,12 @@ version = "2.2.1"
 git-tree-sha1 = "d05d9e7b7aedff4e5b51a029dced05cfb6125781"
 uuid = "d38c429a-6771-53c6-b99e-75d170b6e991"
 version = "0.6.2"
+
+[[deps.CoupledFields]]
+deps = ["LinearAlgebra", "Statistics", "StatsBase"]
+git-tree-sha1 = "6c9671364c68c1158ac2524ac881536195b7e7bc"
+uuid = "7ad07ef1-bdf2-5661-9d2b-286fd4296dac"
+version = "0.2.0"
 
 [[deps.CovarianceEstimation]]
 deps = ["LinearAlgebra", "Statistics", "StatsBase"]
@@ -405,9 +653,9 @@ uuid = "8ba89e20-285c-5b6f-9357-94700520ee1b"
 
 [[deps.Distributions]]
 deps = ["FillArrays", "LinearAlgebra", "PDMats", "Printf", "QuadGK", "Random", "SpecialFunctions", "Statistics", "StatsAPI", "StatsBase", "StatsFuns", "Test"]
-git-tree-sha1 = "938fe2981db009f531b6332e31c58e9584a2f9bd"
+git-tree-sha1 = "3d5873f811f582873bb9871fc9c451784d5dc8c7"
 uuid = "31c24e10-a181-5473-b8eb-7969acd0382f"
-version = "0.25.100"
+version = "0.25.102"
 
     [deps.Distributions.extensions]
     DistributionsChainRulesCoreExt = "ChainRulesCore"
@@ -554,6 +802,12 @@ git-tree-sha1 = "025d171a2847f616becc0f84c8dc62fe18f0f6dd"
 uuid = "d2c73de3-f751-5644-a686-071e5b155ba9"
 version = "0.72.10+0"
 
+[[deps.Gadfly]]
+deps = ["Base64", "CategoricalArrays", "Colors", "Compose", "Contour", "CoupledFields", "DataAPI", "DataStructures", "Dates", "Distributions", "DocStringExtensions", "Hexagons", "IndirectArrays", "IterTools", "JSON", "Juno", "KernelDensity", "LinearAlgebra", "Loess", "Measures", "Printf", "REPL", "Random", "Requires", "Showoff", "Statistics"]
+git-tree-sha1 = "d546e18920e28505e9856e1dfc36cff066907c71"
+uuid = "c91e804a-d5a3-530f-b6f0-dfbca275c004"
+version = "1.4.0"
+
 [[deps.Gettext_jll]]
 deps = ["Artifacts", "CompilerSupportLibraries_jll", "JLLWrappers", "Libdl", "Libiconv_jll", "Pkg", "XML2_jll"]
 git-tree-sha1 = "9b02998aba7bf074d14de89f9d37ca24a1a0b046"
@@ -589,6 +843,12 @@ git-tree-sha1 = "129acf094d168394e80ee1dc4bc06ec835e510a3"
 uuid = "2e76f6c2-a576-52d4-95c1-20adfe4de566"
 version = "2.8.1+1"
 
+[[deps.Hexagons]]
+deps = ["Test"]
+git-tree-sha1 = "de4a6f9e7c4710ced6838ca906f81905f7385fd6"
+uuid = "a1b4810d-1bce-5fbd-ac56-80944d57a21f"
+version = "0.2.0"
+
 [[deps.Hiccup]]
 deps = ["MacroTools", "Test"]
 git-tree-sha1 = "6187bb2d5fcbb2007c39e7ac53308b0d371124bd"
@@ -606,6 +866,11 @@ deps = ["BSON", "CSV", "DataDeps", "Distances", "IterTools", "LinearAlgebra", "M
 git-tree-sha1 = "27da3d215f3ac8bd5dc2b0bb144b4a4367652462"
 uuid = "f7bf1975-0170-51b9-8c5f-a992d46b9575"
 version = "0.6.11"
+
+[[deps.IndirectArrays]]
+git-tree-sha1 = "012e604e1c7458645cb8b436f8fba789a51b257f"
+uuid = "9b13fd28-a010-5f03-acff-a1bbcff69959"
+version = "1.0.0"
 
 [[deps.InlineStrings]]
 deps = ["Parsers"]
@@ -690,6 +955,12 @@ deps = ["Artifacts", "JLLWrappers", "Libdl"]
 git-tree-sha1 = "6f2675ef130a300a112286de91973805fcc5ffbc"
 uuid = "aacddb02-875f-59d6-b918-886e6ef4fbf8"
 version = "2.1.91+0"
+
+[[deps.Juno]]
+deps = ["Base64", "Logging", "Media", "Profile"]
+git-tree-sha1 = "07cb43290a840908a771552911a6274bc6c072c7"
+uuid = "e5e0dc1b-0480-54bc-9374-aad01c23163d"
+version = "0.8.4"
 
 [[deps.KernelDensity]]
 deps = ["Distributions", "DocStringExtensions", "FFTW", "Interpolations", "StatsBase"]
@@ -830,6 +1101,12 @@ version = "2.36.0+0"
 deps = ["Libdl", "OpenBLAS_jll", "libblastrampoline_jll"]
 uuid = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 
+[[deps.Loess]]
+deps = ["Distances", "LinearAlgebra", "Statistics", "StatsAPI"]
+git-tree-sha1 = "a113a8be4c6d0c64e217b472fb6e61c760eb4022"
+uuid = "4345ca2d-374a-55d4-8d30-97f9976e7612"
+version = "0.6.3"
+
 [[deps.LogExpFunctions]]
 deps = ["DocStringExtensions", "IrrationalConstants", "LinearAlgebra"]
 git-tree-sha1 = "7d6dd4e9212aebaeed356de34ccf262a3cd415aa"
@@ -886,6 +1163,12 @@ version = "2.28.2+0"
 git-tree-sha1 = "c13304c81eec1ed3af7fc20e75fb6b26092a1102"
 uuid = "442fdcdd-2543-5da2-b0f3-8c86c306513e"
 version = "0.3.2"
+
+[[deps.Media]]
+deps = ["MacroTools", "Test"]
+git-tree-sha1 = "75a54abd10709c01f1b86b84ec225d26e840ed58"
+uuid = "e89f7d12-3494-54d1-8411-f7d8b9ae1f27"
+version = "0.5.0"
 
 [[deps.Missings]]
 deps = ["DataAPI"]
@@ -1095,6 +1378,10 @@ version = "2.2.7"
 deps = ["Unicode"]
 uuid = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 
+[[deps.Profile]]
+deps = ["Printf"]
+uuid = "9abbd945-dff8-562f-b5e8-e1ebf5ef1b79"
+
 [[deps.Qt6Base_jll]]
 deps = ["Artifacts", "CompilerSupportLibraries_jll", "Fontconfig_jll", "Glib_jll", "JLLWrappers", "Libdl", "Libglvnd_jll", "OpenSSL_jll", "Vulkan_Loader_jll", "Xorg_libSM_jll", "Xorg_libXext_jll", "Xorg_libXrender_jll", "Xorg_libxcb_jll", "Xorg_xcb_util_cursor_jll", "Xorg_xcb_util_image_jll", "Xorg_xcb_util_keysyms_jll", "Xorg_xcb_util_renderutil_jll", "Xorg_xcb_util_wm_jll", "Zlib_jll", "libinput_jll", "xkbcommon_jll"]
 git-tree-sha1 = "7c29f0e8c575428bd84dc3c72ece5178caa67336"
@@ -1225,9 +1512,9 @@ weakdeps = ["ChainRulesCore"]
 
 [[deps.StaticArrays]]
 deps = ["LinearAlgebra", "Random", "StaticArraysCore"]
-git-tree-sha1 = "d5fb407ec3179063214bc6277712928ba78459e2"
+git-tree-sha1 = "0adf069a2a490c47273727e029371b31d44b72b2"
 uuid = "90137ffa-7385-5640-81b9-e52037218182"
-version = "1.6.4"
+version = "1.6.5"
 weakdeps = ["Statistics"]
 
     [deps.StaticArrays.extensions]
@@ -1251,9 +1538,9 @@ version = "1.7.0"
 
 [[deps.StatsBase]]
 deps = ["DataAPI", "DataStructures", "LinearAlgebra", "LogExpFunctions", "Missings", "Printf", "Random", "SortingAlgorithms", "SparseArrays", "Statistics", "StatsAPI"]
-git-tree-sha1 = "1d77abd07f617c4868c33d4f5b9e1dbb2643c9cf"
+git-tree-sha1 = "d1bf48bfcc554a3761a133fe3a9bb01488e06916"
 uuid = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
-version = "0.34.2"
+version = "0.33.21"
 
 [[deps.StatsFuns]]
 deps = ["HypergeometricFunctions", "IrrationalConstants", "LogExpFunctions", "Reexport", "Rmath", "SpecialFunctions"]
@@ -1432,9 +1719,9 @@ version = "1.6.1"
 
 [[deps.XML2_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Libiconv_jll", "Zlib_jll"]
-git-tree-sha1 = "04a51d15436a572301b5abbb9d099713327e9fc4"
+git-tree-sha1 = "24b81b59bd35b3c42ab84fa589086e19be919916"
 uuid = "02c8fc9c-b97f-50b9-bbe4-9be30ff0a78a"
-version = "2.10.4+0"
+version = "2.11.5+0"
 
 [[deps.XSLT_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Libgcrypt_jll", "Libgpg_error_jll", "Libiconv_jll", "Pkg", "XML2_jll", "Zlib_jll"]
@@ -1704,18 +1991,36 @@ version = "1.4.1+1"
 """
 
 # ╔═╡ Cell order:
+# ╟─399af092-5f76-4ef8-800c-9fd3004a2f06
 # ╠═04e03fd4-63e5-4b54-a4ea-21927e8cd5cb
 # ╠═002a45aa-39ff-4b84-bd75-ee9eded6cd39
+# ╟─a43e5a1a-1b3e-4880-886f-22b8aecdcac6
 # ╠═5f7a7820-5c1e-11ee-1767-5f554e5a74b9
 # ╠═cd5b9656-71d5-4de9-9ca4-39db0c5bbe4b
 # ╠═def0ad95-c2e2-4916-860f-6129df3fbcc2
+# ╟─cbf41ccd-ed79-4acb-bb6b-e70a729b796f
+# ╠═346472a1-a9e2-4e7f-ad04-3b8acca8ddb9
+# ╟─24796dfb-790e-49d1-9186-eac96c621867
 # ╠═6d614c21-d4f1-42d0-b8f1-33b449e7a32c
-# ╠═cc834e37-e90f-41d1-bac9-5bce07860557
+# ╠═0415356a-a0db-403e-adb2-d55721d6614d
+# ╠═e5fd0042-6edc-46bd-a643-06b2bc3c9a00
+# ╠═3d1ac51b-73d1-470e-9af3-58f6afdb45d3
+# ╟─760a0e0a-2fc1-4d54-b43e-0ab348938022
+# ╠═5ffbb9ea-f0d7-46ed-9425-1d98f1f3b75f
+# ╟─936da164-f96e-4672-93a3-566bfa5e13a0
 # ╟─fe172922-f540-47f4-aa24-29d844972922
 # ╠═62d9373d-f062-4797-a16b-278917cbae54
-# ╠═e4395679-417d-48df-b29f-f59730e5b9fc
+# ╠═a9862ee1-5785-45a1-ba85-410aa1b2e30f
 # ╠═a227d4e0-23b7-4fe5-955b-e416a14f65ca
+# ╟─10018fd7-db6a-4546-8ad0-032667685f54
 # ╠═55a44ba5-e6a6-4667-92ff-07a55332ab18
+# ╟─2846a53f-f81c-422f-b0db-c813e2713ceb
+# ╠═7dd60210-338b-43cd-b867-be4ff2447a49
+# ╟─ece8ca3b-9ea8-48cc-a00e-1208cc32e0ef
+# ╠═c315f93b-0cb9-4b35-b82f-1b21bc30481d
+# ╟─fb06d342-2170-4836-b475-820b584a83e0
+# ╠═2ac4cb17-9de8-4bd1-83fb-7bf45e36b089
+# ╠═43f87e39-2a21-437b-bfce-dcc8c08443cb
 # ╠═25f10b43-181e-416a-85e7-cb775857955a
 # ╠═9591bd52-32d4-4a2a-ad06-5169877b9f4c
 # ╠═1d46a8b9-b93f-44bf-b6d6-17359082c18a
