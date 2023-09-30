@@ -358,7 +358,7 @@ md"""
 md"""
 ## Loading of source data and gap discovery
 ### Loading of source data
-The data from the DS2 datasets is loaded in the three code chunks that follow. Renaming of columns and basic imputation is applied.
+The data from the DS2 datasets is loaded in the three code chunks that follow. Renaming of columns and basic missing data targetting is applied.
 """
 
 # ╔═╡ 5dcfee09-1818-40db-9b01-e4768e7ca608
@@ -369,7 +369,7 @@ begin
 	raw_switzerland_data = DataFrame(switzerland_t_data, :auto)
 	# Renaming of columns
 	named_switzerland = rename(raw_switzerland_data, :x1 => :"Age", :x2 => :"Sex", :x3 => :"Chest Pain Type", :x4 => :"Resting Blood Pressure", :x5 => :"Serum Cholesterol in mg/dl", :x6 => :"Fasting Blood Sugar > 120 mg/dl", :x7 => :"Resting Electrocardiographic Results", :x8 => :"Maximum Heart Rate Achieved", :x9 => :"Exercise Induced Angina", :x10 => :"Oldpeak = ST Depression Induced by ExercIse Relative to Rest", :x11 => :"Slope of the Peak Exercise ST Segment", :x12 => :"Number of Major Vessels colored by flourosopy", :x13 => :"Thal: 3 = Normal; 6 = Fixed Defect; 7 = Reversable Defect", :x14 => :"Presence of heart disease")
-	# Basic imputation
+	# Basic missing data targetting
 	named_switzerland = apply(named_switzerland, DeclareMissings(; values=("?")))
 end;
 
@@ -381,7 +381,7 @@ begin
 	raw_hungarian_data = DataFrame(hungarian_t_data, :auto)
 	# Renaming of columns
 	named_hungarian = rename(raw_hungarian_data, :x1 => :"Age", :x2 => :"Sex", :x3 => :"Chest Pain Type", :x4 => :"Resting Blood Pressure", :x5 => :"Serum Cholesterol in mg/dl", :x6 => :"Fasting Blood Sugar > 120 mg/dl", :x7 => :"Resting Electrocardiographic Results", :x8 => :"Maximum Heart Rate Achieved", :x9 => :"Exercise Induced Angina", :x10 => :"Oldpeak = ST Depression Induced by Exercise Relative to Rest", :x11 => :"Slope of the Peak Exercise ST Segment", :x12 => :"Number of Major Vessels colored by flourosopy", :x13 => :"Thal: 3 = Normal; 6 = Fixed Defect; 7 = Reversable Defect", :x14 => :"Presence of heart disease")
-	# Basic imputation
+	# Basic missing data targetting
 	named_hungarian = apply(named_hungarian, DeclareMissings(; values=("?")))
 end;
 
@@ -393,7 +393,7 @@ begin
 	raw_va_data = DataFrame(va_t_data, :auto)
 	# Renaming of columns
 	named_va = rename(raw_va_data, :x1 => :"Age", :x2 => :"Sex", :x3 => :"Chest Pain Type", :x4 => :"Resting Blood Pressure", :x5 => :"Serum Cholesterol in mg/dl", :x6 => :"Fasting Blood Sugar > 120 mg/dl", :x7 => :"Resting Electrocardiographic Results", :x8 => :"Maximum Heart Rate Achieved", :x9 => :"Exercise Induced Angina", :x10 => :"Oldpeak = ST Depression Induced by Exercise Relative to Rest", :x11 => :"Slope of the Peak Exercise ST Segment", :x12 => :"Number of Major Vessels colored by flourosopy", :x13 => :"Thal: 3 = Normal; 6 = Fixed Defect; 7 = Reversable Defect", :x14 => :"Presence of heart disease")
-	# Basic imputation
+	# Basic missing data targetting
 	named_va = apply(named_va, DeclareMissings(; values=("?")))
 end;
 
