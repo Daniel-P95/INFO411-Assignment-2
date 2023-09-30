@@ -15,54 +15,139 @@ using Impute: DeclareMissings, apply, Impute
 
 # ╔═╡ 872d8ce0-088b-4576-8cfb-9c46c06f6df8
 md""" 
-### Loading and Cleaning
+# Loading and Cleaning of DS1
+"""
+
+# ╔═╡ f5d574cc-a09a-4290-b326-d1ffde943f7e
+md"""
+## Source data: DS1
 """
 
 # ╔═╡ 41df967b-99ec-4fa2-9479-b57c9d74dd61
-data = readdlm("DS1.txt", ' ', header=false);
+# Change pathway as necessary
+data = readdlm("C:/Online Storage/OneDrive/2. Education/1. University of Otago/Master of Business Data Science/Papers/INFO411 - Machine Learning and Data Mining/Assignments/Assignment 2/EDA/DS1.txt", ' ', header=false);
 
 # ╔═╡ 32bd7272-90dd-42a5-899b-7f4b67b92a8e
 raw_data = DataFrame(data, :auto)
 
-# ╔═╡ c7aa921d-e6b1-4888-ab76-fde11d987476
-# Name the columns
-renamed_raw_data = rename(raw_data, :x1 => :"Age", :x2 => :"Sex", :x3 => :"Chest Pain Type", :x4 => :"Resting Blood Pressure", :x5 => :"Serum Cholesterol in mg/dl", :x6 => :"Fasting Blood Sugar > 120 mg/dl", :x7 => :"Resting Electrocaridographic Results", :x8 => :"Maximum Heart Rate Achieved", :x9 => :"Exercise Induced Angina", :x10 => :"Oldpeak = ST Depression Induced by Exercuse Relative to Rest", :x11 => :"Slope of the Peak Exercise ST Segment", :x12 => :"Number of Major Vessels colored by flourosopy", :x13 => :"Thal: 3 = Normal; 6 = Fixed Defect; 7 = Reversable Defect", :x14 => :"Presence of heart disease");
+# ╔═╡ a41f3f7f-5e3f-4bac-9282-ec6cf6aaed71
+md"""
+## Data cleaning
+"""
 
-# ╔═╡ 8c3be8a3-70f4-4bdc-a907-9e1de785eebc
-names(renamed_raw_data)
+# ╔═╡ 63208215-2835-47db-988b-27f13a23114f
+md"""
+### Renaming columns
+"""
+
+# ╔═╡ 67aa236f-f6ff-49e4-bad2-0775499a74a1
+md"""
+In the UCI Machine Learning link for the data (https://archive.ics.uci.edu/dataset/45/heart+disease), there is a Variables Table (referred to as such from now on) which describes the variables used. The description includes the following:
+- Variable Name.
+- Role (Feature or Target).
+- Type (Integer or Categorical).
+- Demographic (Age or Sex for the Age and Sex variables).
+- Description (Only some descriptions present, where necessary).
+- Units (Years for Age, mm Hg for Resting Blood Pressure, mg/dl for Serum Cholestoral).
+- Missing Values (Indication of if values are missing: Yes or No).
+The columns in the source data are renamed from their original "X1, X2..." designations to the names found in the Variable Name column of the table.
+"""
+
+# ╔═╡ c7aa921d-e6b1-4888-ab76-fde11d987476
+renamed_raw_data = rename(raw_data, :x1 => :"Age", :x2 => :"Sex", :x3 => :"Chest Pain Type", :x4 => :"Resting Blood Pressure", :x5 => :"Serum Cholesterol in mg/dl", :x6 => :"Fasting Blood Sugar > 120 mg/dl", :x7 => :"Resting Electrocardiographic Results", :x8 => :"Maximum Heart Rate Achieved", :x9 => :"Exercise Induced Angina", :x10 => :"Oldpeak = ST Depression Induced by Exercise Relative to Rest", :x11 => :"Slope of the Peak Exercise ST Segment", :x12 => :"Number of Major Vessels colored by flourosopy", :x13 => :"Thal: 3 = Normal; 6 = Fixed Defect; 7 = Reversable Defect", :x14 => :"Presence of heart disease");
+
+# ╔═╡ c4fac9d0-008d-4354-9147-e553c1d60017
+md"""
+### Data transformation
+"""
+
+# ╔═╡ 7b447fba-f689-4cfc-b42e-a91c9b000a1a
+md"""
+After renaming the columns, the data was transformed to the type of data described in the Variables Table on the UCI website. This involved:
+- Converting binary values to words (such as 1.0 to "Yes" and 0.0 to "No").
+- Creating ordered and unordered categorical values where the variable type was stated as categorical in the aforementioned Variables Table.
+- Converting floats to integers. One exception is the variable of "ST Depression induced by exercise relative to rest" because the values in this variable are not whole numbers. This is therefore kept as a float.
+In the Variables Table, the Target variable (Presence of heart disease) was referred to as an integer type variable. In this assignment, we have converted it to an unordered categorical feature of "Yes" and "No" because it made sense due to its nature: In the source data, it is a variable that takes on a value of 1 or 2, representing presence of heart disease (2) or no heart disease (1).
+"""
 
 # ╔═╡ 2f4fe8ba-b38f-4050-ab32-675fa71caa3a
-# Converting binary values to words, creating ordered categorical values, creating categorical values and converting floats to ints.
-# As per DS1\ UCI website
 begin 
+	# Ordered categorical data designation: Slope of the Peak Exercise ST Segment
+	renamed_raw_data[!,3] = categorical(renamed_raw_data[:,3], ordered = true)
 	renamed_raw_data[!,11] = categorical(renamed_raw_data[:,11], ordered = true)
+	# Binary conversion
+	renamed_raw_data[!, 2] = map(x -> x == 1.0 ? "Male" : "Female", renamed_raw_data[!, 2])
 	renamed_raw_data[!, 6] = map(x -> x == 1.0 ? "Yes" : "No", renamed_raw_data[!, 6])
 	renamed_raw_data[!, 9] = map(x -> x == 1.0 ? "Yes" : "No", renamed_raw_data[!, 9])
 	renamed_raw_data[!, 14] = map(x -> x == 1.0 ? "No" : "Yes", renamed_raw_data[!, 14])
-	renamed_raw_data[!, 2] = map(x -> x == 1.0 ? "Male" : "Female", renamed_raw_data[!, 2])
+	# Catergorical data designation
 	renamed_raw_data[!,2] = categorical(renamed_raw_data[:,2], ordered = false)
+	renamed_raw_data[!,6] = categorical(renamed_raw_data[:,6], ordered = false)
 	renamed_raw_data[!,7] = categorical(renamed_raw_data[:,7], ordered = false)
-	renamed_raw_data[!,3] = categorical(renamed_raw_data[:,3], ordered = false)
+	renamed_raw_data[!,9] = categorical(renamed_raw_data[:,9], ordered = false)
 	renamed_raw_data[!,13] = categorical(renamed_raw_data[:,13], ordered = false)
-	renamed_raw_data[!, Not([2,6,9,10,14])] = convert.(Int64, renamed_raw_data[:, Not([2,6,9,10,14])])
+	renamed_raw_data[!,14] = categorical(renamed_raw_data[:,14], ordered = false)
+	# Conversion from Floats to Integers
+	renamed_raw_data[!, Not([2,3,6,7,9,10,11,13,14])] = convert.(Int64, renamed_raw_data[:, Not([2,3,6,7,9,10,11,13,14])])
 end;
 
 # ╔═╡ acedad0b-c3d3-4ccd-b5b5-aa21122876f3
 cleaned_data = renamed_raw_data;
+
+# ╔═╡ ed55ce0b-4104-4cbf-b98f-f81d6ebcce82
+md"""
+### Cleaned dataset
+"""
+
+# ╔═╡ f3d4decc-4251-4959-abe0-58383b5e205f
+md"""
+Now that the data has been cleaned, some exploration and visualisation can be performed. First, here is a look at what the cleaned dataset looks like:
+"""
 
 # ╔═╡ d9ca76b3-242b-4a6c-a1ca-8c7e1f0c2f7f
 cleaned_data
 
 # ╔═╡ 26d5daa7-859b-42d8-b74a-1b7ec733e7ac
 md""" 
-### Visulisation and Exploration
+# Exploration and Visualisation
 """
 
-# ╔═╡ 610e5579-644b-4e88-b018-857d3310c2fe
-eltype.(eachcol(cleaned_data))
+# ╔═╡ c5ffc016-645e-40f4-b543-2c34cb829fc3
+md"""
+## Data description
+"""
+
+# ╔═╡ 5ddbc5ea-66a7-406d-ab81-775069b70511
+md"""
+### Variable overview and basic descriptive statistics
+"""
+
+# ╔═╡ bfbfda1a-336c-4026-944d-6152c4aa4675
+md"""
+It can be seen that the variable conversion was successful as the variable type (eltype or element type) shows the conversions as intended. There is also no missing data, which is to be expected, because this was a complete dataset to begin with.
+
+Of the 13 variables that describe the target (Presence of heart disease), 7 are categorical and 6 are numerical. Of the categorical variables, Chest Pain and Slope of Peak Exercise ST are the only that are ordered, the rest unordered.
+
+Some interesting values are shown from the numerical variables:
+- The number of participants of the study that are now studied in the cleaned data is 270.
+- The median age for the study was 55.
+- The median resting blood pressure was 130 which represents a healthy average, but the maximum was 200 which can be considered extremely dangerous.
+- The maximum heart rate achieved in the study was 202 bpm, which is representative of very high exertion.
+- The median depression induced by exercise is 0.8, which is far lower than the maximum of 6.2.
+"""
 
 # ╔═╡ 0bb83db4-93b8-429e-ba53-ce0d8ce64772
-describe(cleaned_data[:,[1,4,5,8,10]])
+describe(cleaned_data)
+
+# ╔═╡ 0d1333e1-aea4-477b-9a42-96a8d8eeebf6
+md"""
+### Visualisations of DS1
+"""
+
+# ╔═╡ d6efb7a6-b061-4eef-9183-8aa43919a905
+md"""
+The figure below shows a Violin plot of the male and female participants according to age. The age range for males exceeded that of the females, but the median age for females exceeded that of the males.
+"""
 
 # ╔═╡ 8f465e10-de67-490d-a9f1-d3434f13b1a3
 begin
@@ -70,76 +155,189 @@ begin
 	violin!(["DS1"], cleaned_data[cleaned_data."Sex" .== "Female",:Age], side = :right, color = "#DF8A56", label = "Female")
 end
 
-# ╔═╡ ebe1d7bc-1502-47f1-a07a-570ab76acf93
+# ╔═╡ 3e43d464-ce46-4d0c-b2bf-9cda5a478493
+md"""
+The figures below show frequencies of males and females according to various measurements:
+- Chest Pain Type: Most participants reported chest pain measurements of 4, which is asymptomatic.
+- Exercise Induced Angina: Most participants did not experience exercise-induced angina.
+- Fasting Blood Sugar: Most participants did not have high fasting blood sugar, above 120 mg/dl.
+- Resting Electrocardiographic Results: There was an almost even split between participants who had normal results (0) and possible or definite left ventricular hypertrophy by Estes' criteria (2).
+The pattern between males and females remains very similar across all plots.
+"""
 
+# ╔═╡ 79e9247c-2ba7-458e-aac5-b10c9364d429
+begin
+	set_default_plot_size(21cm, 12cm)
+	
+	p01 = Gadfly.plot(cleaned_data, x="Chest Pain Type", 
+	color = "Sex", 
+	Geom.histogram,
+    Scale.color_discrete_manual("#5377C9", "#DF8A56"), 	
+	Guide.ylabel("Frequency", orientation=:vertical));
+	
+	p02 = Gadfly.plot(cleaned_data, x="Exercise Induced Angina", 
+	color = "Sex", 
+	Geom.histogram,
+    Scale.color_discrete_manual("#5377C9", "#DF8A56"), 	
+	Guide.ylabel("Frequency", orientation=:vertical));
+
+	p03 = Gadfly.plot(cleaned_data, x="Fasting Blood Sugar > 120 mg/dl", 
+	color = "Sex", 
+	Geom.histogram,
+    Scale.color_discrete_manual("#5377C9", "#DF8A56"), 	
+	Guide.ylabel("Frequency", orientation=:vertical));
+
+	p04 = Gadfly.plot(cleaned_data, x="Resting Electrocardiographic Results", 
+	color = "Sex", 
+	Geom.histogram,
+    Scale.color_discrete_manual("#5377C9", "#DF8A56"), 	
+	Guide.ylabel("Frequency", orientation=:vertical));
+	
+	gridstack([p01 p02; p03 p04])
+end
+
+# ╔═╡ 50cd40ac-ede0-4035-be5c-f29b20d89ecb
+md"""
+The figures below dive into the presence of heart disease according to several features. The following can be gathered from the figures as an indication of the presence of heart disease:
+- Higher resting blood pressure with lower maximum heart rate achievement.
+- Higher resting blood pressure with higher serum cholesterol.
+- Lower age and lower maximum heart rate achieved.
+There is not a clear indication of how serum cholesterol at different ages affects your chances of getting heart disease. It appears that the factors out of the ones below indicate that resting blood pressure and maximum heart rate achieved during exercise could be best used for determining the presence of heart disease.
+"""
+
+# ╔═╡ ebe1d7bc-1502-47f1-a07a-570ab76acf93
 begin
 	set_default_plot_size(21cm, 12cm)
 	colors_dict = Dict("No" => colorant"#800080", "Yes" => colorant"#000080")
+	
 	p1 = Gadfly.plot(cleaned_data, x="Resting Blood Pressure", y="Maximum Heart Rate Achieved", color = "Presence of heart disease", Geom.point,
     Scale.color_discrete_manual("#5377C9", "#DF8A56"));
-	p2 = Gadfly.plot(cleaned_data, x="Serum Cholesterol in mg/dl", y="Age", color="Presence of heart disease", Geom.point,
-    Scale.color_discrete_manual("#5377C9", "#DF8A56"));
-	p3 = Gadfly.plot(cleaned_data, x="Serum Cholesterol in mg/dl", y="Resting Blood Pressure", color="Presence of heart disease", Geom.point,
-    Scale.color_discrete_manual("#5377C9", "#DF8A56"));
-	p4 = Gadfly.plot(cleaned_data, x="Maximum Heart Rate Achieved", y="Resting Blood Pressure", color="Presence of heart disease",
+	
+	p2 = Gadfly.plot(cleaned_data, x="Age", y="Maximum Heart Rate Achieved", color="Presence of heart disease",
           Geom.point,
     Scale.color_discrete_manual("#5377C9", "#DF8A56"));
+	
+	p3 = Gadfly.plot(cleaned_data, x="Resting Blood Pressure", y="Serum Cholesterol in mg/dl", color="Presence of heart disease", Geom.point,
+    Scale.color_discrete_manual("#5377C9", "#DF8A56"));
+	
+	p4 = Gadfly.plot(cleaned_data, x="Age", y="Serum Cholesterol in mg/dl", color="Presence of heart disease", Geom.point,
+    Scale.color_discrete_manual("#5377C9", "#DF8A56"));
+	
 	gridstack([p1 p2; p3 p4])
 end
+
+# ╔═╡ d6ce6afa-abd3-44e0-88ae-191ad47eb244
+md"""
+The figures below are density plots of age versus resting blood pressure and depression induced by exercise relative to rest. The density plots are separated between those with and without heart disease. 
+
+In both instances, age does not seem to infleunce the presence of heart disease much. On the other hand:
+- Resting blood pressure looks to be somewhat positively correlated with the presence of heart disease.
+- High measures of depression induced by exercise relative to rest look to be very strongly correlated with the presence of heart disease.
+"""
 
 # ╔═╡ 149828f1-10d5-4a2f-abdf-bb30552375be
 begin 
 	set_default_plot_size(18cm, 15cm)
-p5 = Gadfly.plot(
-    cleaned_data,
-    x = :"Age",
-    y = :"Oldpeak = ST Depression Induced by Exercuse Relative to Rest",
-    color  = :"Presence of heart disease",
-    Scale.color_discrete_manual("#5377C9", "#DF8A56"),
-    Guide.colorkey(pos = [0w, -0.42h]),
-	Geom.point, alpha=[0.8]
-	,	Coord.cartesian(xmin=30, xmax=80, ymin=-1, ymax=7)
-	)
+	
+	p5 = Gadfly.plot(
+	    cleaned_data,
+	    x = :"Age",
+	    y = :"Resting Blood Pressure",
+	    color  = :"Presence of heart disease",
+	    Scale.color_discrete_manual("#5377C9", "#DF8A56"),
+		Geom.density2d(levels = 4),
+	    Guide.colorkey(pos = [0w, -0.42h]),
+		)
 
-
-
-p6 = Gadfly.plot(
-    cleaned_data,
-    x = :"Age",
-    y = :"Oldpeak = ST Depression Induced by Exercuse Relative to Rest",
-    color  = :"Presence of heart disease",
-    Scale.color_discrete_manual("#5377C9", "#DF8A56"),
-	Geom.density2d(levels = 4),
-    Guide.colorkey(pos = [0w, -0.42h])
-	,	Coord.cartesian(xmin=30, xmax=80, ymin=-1, ymax=7)
-	)
-
-
+	p6 = Gadfly.plot(
+	    cleaned_data,
+	    x = :"Age",
+	    y = :"Oldpeak = ST Depression Induced by Exercise Relative to Rest",
+	    color  = :"Presence of heart disease",
+	    Scale.color_discrete_manual("#5377C9", "#DF8A56"),
+		Geom.density2d(levels = 4),
+	    Guide.colorkey(pos = [0w, -0.42h]),
+		Coord.cartesian(xmin=30, xmax=80, ymin=-1, ymax=7)
+		)
 	
 	gridstack([p5 p6])
-
-
-	
 end
 
-# ╔═╡ 7e1b2a3e-53f9-41a2-bb60-147c2eb9a3c3
-freq_counts = combine(groupby(cleaned_data, [1, 2, 14]), nrow);
+# ╔═╡ 49bcf8ab-2591-486e-8289-fba563d86d4c
+md"""
+The plots below illustrate the frequency of males and females who have and do not have heart disease according to age. The following can be drawn from these figures in the scope of the test study group:
+- There are more males who do not have heart disease than those who do not.
+- There are more females who have heart disease than those who do not.
+- Most of the males and females who do not have heart disease are around 60 years of age.
+- The population of females who have heart disease are evenly spread across the ages.
+What could be inferred from this is that there are more active 60 year old females than at any other age, in this study group.
+"""
 
 # ╔═╡ 4c8d66dd-fd45-4648-95ac-691a7b7bcaa7
-begin 
+begin
+	# Create groups for frequency counts of Age, Sex and Presence of Heart Disease
+	freq_counts = combine(groupby(cleaned_data, [1, 2, 14]), nrow)
+	
+	#Plotting 
 	set_default_plot_size(18cm, 18cm)
 	
-	p7 = Gadfly.plot(freq_counts[freq_counts."Presence of heart disease" .== "Yes", :], color=:Sex, y=:nrow, x=:Age, alpha=[0.7], Geom.bar(position=:identity),Coord.cartesian(xmin=20, xmax=80, ymin=0, ymax=10),Guide.ylabel("Frequency"), Scale.color_discrete_manual("#5377C9", "#DF8A56"), Guide.title("Disease Free Population"))
+	p7 = Gadfly.plot(freq_counts[freq_counts."Presence of heart disease" .== "Yes", :], 
+		color=:Sex, y=:nrow, x=:Age, alpha=[0.7], 
+		Geom.bar(position=:identity),
+	Coord.cartesian(xmin=20, xmax=80, ymin=0, ymax=10),
+	Guide.ylabel("Frequency"), 
+	Scale.color_discrete_manual("#5377C9", "#DF8A56"), 
+	Guide.title("Disease Free Population"))
 	
-	p8 = Gadfly.plot(freq_counts[freq_counts."Presence of heart disease" .== "No", :], color=:Sex, y=:nrow, x=:Age, alpha=[0.7], Geom.bar(position=:identity),Coord.cartesian(xmin=20, xmax=80, ymin=0, ymax=10),Guide.ylabel("Frequency"), Scale.color_discrete_manual("#5377C9", "#DF8A56"), Guide.title("Heart Disease Population"))
+	p8 = Gadfly.plot(freq_counts[freq_counts."Presence of heart disease" .== "No", :], 
+		color=:Sex, y=:nrow, x=:Age, alpha=[0.7], 
+		Geom.bar(position=:identity),
+	Coord.cartesian(xmin=20, xmax=80, ymin=0, ymax=10),
+	Guide.ylabel("Frequency"), 
+	Scale.color_discrete_manual("#5377C9", "#DF8A56"), 
+	Guide.title("Heart Disease Population"))
 
-	p9 = Gadfly.plot(layer(freq_counts[freq_counts."Presence of heart disease" .== "Yes", :], color=:Sex, y=:nrow, x=:Age, Geom.density),Scale.color_discrete_manual("#5377C9", "#DF8A56"),Coord.cartesian(xmin=20, xmax=80, ymin=0, ymax=0.1),Guide.ylabel("Density"), Guide.title("Disease Free Populaiton"))
+	p9 = Gadfly.plot(layer(freq_counts[freq_counts."Presence of heart disease" .== "Yes", :], 
+		color=:Sex, y=:nrow, x=:Age, 
+		Geom.density),
+	Scale.color_discrete_manual("#5377C9", "#DF8A56"),
+	Coord.cartesian(xmin=20, xmax=80, ymin=0, ymax=0.1),
+	Guide.ylabel("Density"), 
+	Guide.title("Disease Free Populaiton"))
 	
-	p10 = Gadfly.plot(layer(freq_counts[freq_counts."Presence of heart disease" .== "No", :], color=:Sex, y=:nrow, x=:Age, Geom.density),Scale.color_discrete_manual("#5377C9", "#DF8A56"),Coord.cartesian(xmin=20, xmax=80, ymin=0, ymax=0.1),Guide.ylabel("Density"), Guide.title("Heart Disease Population"))
-
+	p10 = Gadfly.plot(layer(freq_counts[freq_counts."Presence of heart disease" .== "No", :], 
+		color=:Sex, y=:nrow, x=:Age, 
+		Geom.density),
+	Scale.color_discrete_manual("#5377C9", "#DF8A56"),
+	Coord.cartesian(xmin=20, xmax=80, ymin=0, ymax=0.1),
+	Guide.ylabel("Density"), 
+	Guide.title("Heart Disease Population"))
 	
 	gridstack([p7 p8; p9 p10])
 end
+
+# ╔═╡ 626830fb-317d-4bd8-bd0e-fd5d3bd51694
+md"""
+The correlogram that follows investigates the correclation each variable has with each other. The following is a summary on what can be discerned.
+
+Low correlation:
+- Resting Blood Pressure and Maximum Heart Rate.
+- Maximum Heart Rate and Serum Cholesterol.
+- Serum Cholesterol and Exercise Induced Depression.
+Highest correlation:
+- Resting Blood Pressure and Age.
+- Exercise Induced Depression and Resting Blood Pressure.
+- Serum Cholesterol and Age.
+- Exercise Induced Depression and Age.
+- Maximum Heart Rate and Age.
+- Exercise Induced Depression and Maximum Heart Rate.
+What can be inferred from this is that, if we understand that Exercise Induced Depression might be a strong determining factor for the presence of heart disease, the following variables should be avoided in favour of using Depression as a variable for a predictive model:
+- Maximum Heart Rate.
+- Age.
+- Resting Blood Pressure.
+
+The best other determining factor that should be considered is Serum Cholesterol.
+"""
 
 # ╔═╡ adbf1720-80d1-40b2-b292-bc752c12dcdb
 begin 
@@ -151,66 +349,87 @@ begin
 	annotate!([(j, i, Plots.text(round(M[i,j],digits=3), 8,"Computer Modern",:black)) for i in 1:n for j in 1:m])
 end
 
+# ╔═╡ 2d17e73d-6505-4183-ac34-426e96873cb3
+md"""
+# Exploration of DS2
+"""
+
+# ╔═╡ 78d3626c-32eb-43b1-addb-6309987b1783
+md"""
+## Loading of source data and gap discovery
+### Loading of source data
+The data from the DS2 datasets is loaded in the three code chunks that follow. Renaming of columns and basic imputation is applied.
+"""
+
 # ╔═╡ 5dcfee09-1818-40db-9b01-e4768e7ca608
 begin
-	switzerland_t_data = readdlm("processed.switzerland.data", ',', header=false)
+	# Change pathway as necessary
+	switzerland_t_data = readdlm("C:/Online Storage/OneDrive/2. Education/1. University of Otago/Master of Business Data Science/Papers/INFO411 - Machine Learning and Data Mining/Assignments/Assignment 2/Source data/heart+disease/processed.switzerland.data", ',', header=false)
+	# Raw data
 	raw_switzerland_data = DataFrame(switzerland_t_data, :auto)
-	named_switzerland = rename(raw_switzerland_data, :x1 => :"Age", :x2 => :"Sex", :x3 => :"Chest Pain Type", :x4 => :"Resting Blood Pressure", :x5 => :"Serum Cholesterol in mg/dl", :x6 => :"Fasting Blood Sugar > 120 mg/dl", :x7 => :"Resting Electrocaridographic Results", :x8 => :"Maximum Heart Rate Achieved", :x9 => :"Exercise Induced Angina", :x10 => :"Oldpeak = ST Depression Induced by Exercuse Relative to Rest", :x11 => :"Slope of the Peak Exercise ST Segment", :x12 => :"Number of Major Vessels colored by flourosopy", :x13 => :"Thal: 3 = Normal; 6 = Fixed Defect; 7 = Reversable Defect", :x14 => :"Presence of heart disease")
-	
+	# Renaming of columns
+	named_switzerland = rename(raw_switzerland_data, :x1 => :"Age", :x2 => :"Sex", :x3 => :"Chest Pain Type", :x4 => :"Resting Blood Pressure", :x5 => :"Serum Cholesterol in mg/dl", :x6 => :"Fasting Blood Sugar > 120 mg/dl", :x7 => :"Resting Electrocardiographic Results", :x8 => :"Maximum Heart Rate Achieved", :x9 => :"Exercise Induced Angina", :x10 => :"Oldpeak = ST Depression Induced by ExercIse Relative to Rest", :x11 => :"Slope of the Peak Exercise ST Segment", :x12 => :"Number of Major Vessels colored by flourosopy", :x13 => :"Thal: 3 = Normal; 6 = Fixed Defect; 7 = Reversable Defect", :x14 => :"Presence of heart disease")
+	# Basic imputation
 	named_switzerland = apply(named_switzerland, DeclareMissings(; values=("?")))
-
 end;
 
 # ╔═╡ 1134788b-b113-4bde-bfd9-3eda1d699326
 begin
-	hungarian_t_data = readdlm("processed.hungarian.data", ',', header=false)
+	# Change pathway as necessary
+	hungarian_t_data = readdlm("C:/Online Storage/OneDrive/2. Education/1. University of Otago/Master of Business Data Science/Papers/INFO411 - Machine Learning and Data Mining/Assignments/Assignment 2/Source data/heart+disease/processed.hungarian.data", ',', header=false)
+	# Raw data
 	raw_hungarian_data = DataFrame(hungarian_t_data, :auto)
-	named_hungarian = rename(raw_hungarian_data, :x1 => :"Age", :x2 => :"Sex", :x3 => :"Chest Pain Type", :x4 => :"Resting Blood Pressure", :x5 => :"Serum Cholesterol in mg/dl", :x6 => :"Fasting Blood Sugar > 120 mg/dl", :x7 => :"Resting Electrocaridographic Results", :x8 => :"Maximum Heart Rate Achieved", :x9 => :"Exercise Induced Angina", :x10 => :"Oldpeak = ST Depression Induced by Exercuse Relative to Rest", :x11 => :"Slope of the Peak Exercise ST Segment", :x12 => :"Number of Major Vessels colored by flourosopy", :x13 => :"Thal: 3 = Normal; 6 = Fixed Defect; 7 = Reversable Defect", :x14 => :"Presence of heart disease")
-	
+	# Renaming of columns
+	named_hungarian = rename(raw_hungarian_data, :x1 => :"Age", :x2 => :"Sex", :x3 => :"Chest Pain Type", :x4 => :"Resting Blood Pressure", :x5 => :"Serum Cholesterol in mg/dl", :x6 => :"Fasting Blood Sugar > 120 mg/dl", :x7 => :"Resting Electrocardiographic Results", :x8 => :"Maximum Heart Rate Achieved", :x9 => :"Exercise Induced Angina", :x10 => :"Oldpeak = ST Depression Induced by Exercise Relative to Rest", :x11 => :"Slope of the Peak Exercise ST Segment", :x12 => :"Number of Major Vessels colored by flourosopy", :x13 => :"Thal: 3 = Normal; 6 = Fixed Defect; 7 = Reversable Defect", :x14 => :"Presence of heart disease")
+	# Basic imputation
 	named_hungarian = apply(named_hungarian, DeclareMissings(; values=("?")))
 end;
 
 # ╔═╡ c2ddd8f9-79fb-4357-b16b-fa673b8abb38
 begin
-	va_t_data = readdlm("processed.va.data", ',', header=false)
+	# Change pathway as necessary
+	va_t_data = readdlm("C:/Online Storage/OneDrive/2. Education/1. University of Otago/Master of Business Data Science/Papers/INFO411 - Machine Learning and Data Mining/Assignments/Assignment 2/Source data/heart+disease/processed.va.data", ',', header=false)
+	# Raw data
 	raw_va_data = DataFrame(va_t_data, :auto)
-	named_va = rename(raw_va_data, :x1 => :"Age", :x2 => :"Sex", :x3 => :"Chest Pain Type", :x4 => :"Resting Blood Pressure", :x5 => :"Serum Cholesterol in mg/dl", :x6 => :"Fasting Blood Sugar > 120 mg/dl", :x7 => :"Resting Electrocaridographic Results", :x8 => :"Maximum Heart Rate Achieved", :x9 => :"Exercise Induced Angina", :x10 => :"Oldpeak = ST Depression Induced by Exercuse Relative to Rest", :x11 => :"Slope of the Peak Exercise ST Segment", :x12 => :"Number of Major Vessels colored by flourosopy", :x13 => :"Thal: 3 = Normal; 6 = Fixed Defect; 7 = Reversable Defect", :x14 => :"Presence of heart disease")
-	
+	# Renaming of columns
+	named_va = rename(raw_va_data, :x1 => :"Age", :x2 => :"Sex", :x3 => :"Chest Pain Type", :x4 => :"Resting Blood Pressure", :x5 => :"Serum Cholesterol in mg/dl", :x6 => :"Fasting Blood Sugar > 120 mg/dl", :x7 => :"Resting Electrocardiographic Results", :x8 => :"Maximum Heart Rate Achieved", :x9 => :"Exercise Induced Angina", :x10 => :"Oldpeak = ST Depression Induced by Exercise Relative to Rest", :x11 => :"Slope of the Peak Exercise ST Segment", :x12 => :"Number of Major Vessels colored by flourosopy", :x13 => :"Thal: 3 = Normal; 6 = Fixed Defect; 7 = Reversable Defect", :x14 => :"Presence of heart disease")
+	# Basic imputation
 	named_va = apply(named_va, DeclareMissings(; values=("?")))
-
 end;
 
 # ╔═╡ 4e4d77f2-ed38-44f1-a817-f3b1760c8d07
 md""" 
 ### Heatmap of missing value locations
-Blank space corresponds to missing value
+Blank spaces correspond to missing values. This is a visual guide to be used for targeted data cleaning. It can be seen that in all cases, variable 12 is significantly unpopulated, with variable 13 and 11 coming in second. 
+
+These variables are:
+- 11: Slope of the Peak Exercise ST Segment.
+- 12: Number of Major Vessels colored by flourosopy.
+- 13: Thal: 3 = Normal; 6 = Fixed Defect; 7 = Reversable Defect.
 """
 
 # ╔═╡ 7c3d8e13-edf5-4f8c-b340-aabd3f44e8d5
 begin
-	  	p11 = heatmap(
+	p11 = heatmap(
 	        1:14, 1:200, Matrix{Bool}(ismissing.(named_va)),
 	        color=:grays, xticks = false, legend = false
-		);
-		annotate!(0.5,215, Plots.text("Va", 10, :left, :black))
-
+			);
+			annotate!(0.5,215, Plots.text("Va", 10, :left, :black))
 	   
-		p12 = heatmap(
+	p12 = heatmap(
 	        1:14, 1:294, Matrix{Bool}(ismissing.(named_hungarian)),
 	        color=:grays, xticks = false, legend = false
-		);
-		annotate!(0.5,325, Plots.text("Hungarian", 10, :left, :black))
-
+			);
+			annotate!(0.5,325, Plots.text("Hungarian", 10, :left, :black))
 	
-		p13 = heatmap(
+	p13 = heatmap(
 	        1:14, 1:123, Matrix{Bool}(ismissing.(named_switzerland)),
 	        xlabel="Variables",
 	        color=:grays, xticks = (1:14), legend = false
-		   );
-		annotate!(0.5,135, Plots.text("Switzerland", 10, :left, :black))
+		   	);
+			annotate!(0.5,135, Plots.text("Switzerland", 10, :left, :black))
 	
-		Plots.plot(p11,p12,p13, layout = (3,1), ylabel = "Observations", legend=:right)
-
+	Plots.plot(p11,p12,p13, layout = (3,1), ylabel = "Observations", legend=:right)
 end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
@@ -1712,24 +1931,42 @@ version = "1.4.1+0"
 # ╔═╡ Cell order:
 # ╟─872d8ce0-088b-4576-8cfb-9c46c06f6df8
 # ╠═e24a183f-223a-4fe6-824b-2f85a8fc5016
+# ╟─f5d574cc-a09a-4290-b326-d1ffde943f7e
 # ╠═41df967b-99ec-4fa2-9479-b57c9d74dd61
 # ╠═32bd7272-90dd-42a5-899b-7f4b67b92a8e
+# ╟─a41f3f7f-5e3f-4bac-9282-ec6cf6aaed71
+# ╟─63208215-2835-47db-988b-27f13a23114f
+# ╟─67aa236f-f6ff-49e4-bad2-0775499a74a1
 # ╠═c7aa921d-e6b1-4888-ab76-fde11d987476
-# ╠═8c3be8a3-70f4-4bdc-a907-9e1de785eebc
+# ╟─c4fac9d0-008d-4354-9147-e553c1d60017
+# ╟─7b447fba-f689-4cfc-b42e-a91c9b000a1a
 # ╠═2f4fe8ba-b38f-4050-ab32-675fa71caa3a
 # ╠═acedad0b-c3d3-4ccd-b5b5-aa21122876f3
+# ╟─ed55ce0b-4104-4cbf-b98f-f81d6ebcce82
+# ╟─f3d4decc-4251-4959-abe0-58383b5e205f
 # ╠═d9ca76b3-242b-4a6c-a1ca-8c7e1f0c2f7f
 # ╟─26d5daa7-859b-42d8-b74a-1b7ec733e7ac
 # ╠═ef1dc870-2432-4b74-af14-3d2e1a805a46
-# ╠═610e5579-644b-4e88-b018-857d3310c2fe
+# ╟─c5ffc016-645e-40f4-b543-2c34cb829fc3
+# ╟─5ddbc5ea-66a7-406d-ab81-775069b70511
+# ╟─bfbfda1a-336c-4026-944d-6152c4aa4675
 # ╠═0bb83db4-93b8-429e-ba53-ce0d8ce64772
+# ╟─0d1333e1-aea4-477b-9a42-96a8d8eeebf6
+# ╟─d6efb7a6-b061-4eef-9183-8aa43919a905
 # ╠═8f465e10-de67-490d-a9f1-d3434f13b1a3
+# ╟─3e43d464-ce46-4d0c-b2bf-9cda5a478493
+# ╠═79e9247c-2ba7-458e-aac5-b10c9364d429
+# ╟─50cd40ac-ede0-4035-be5c-f29b20d89ecb
 # ╠═ebe1d7bc-1502-47f1-a07a-570ab76acf93
+# ╟─d6ce6afa-abd3-44e0-88ae-191ad47eb244
 # ╠═149828f1-10d5-4a2f-abdf-bb30552375be
-# ╠═7e1b2a3e-53f9-41a2-bb60-147c2eb9a3c3
+# ╟─49bcf8ab-2591-486e-8289-fba563d86d4c
 # ╠═4c8d66dd-fd45-4648-95ac-691a7b7bcaa7
+# ╟─626830fb-317d-4bd8-bd0e-fd5d3bd51694
 # ╠═adbf1720-80d1-40b2-b292-bc752c12dcdb
+# ╟─2d17e73d-6505-4183-ac34-426e96873cb3
 # ╠═a2a3aef6-4b19-4f9b-8eb5-0bf78e549b36
+# ╟─78d3626c-32eb-43b1-addb-6309987b1783
 # ╠═5dcfee09-1818-40db-9b01-e4768e7ca608
 # ╠═1134788b-b113-4bde-bfd9-3eda1d699326
 # ╠═c2ddd8f9-79fb-4357-b16b-fa673b8abb38
