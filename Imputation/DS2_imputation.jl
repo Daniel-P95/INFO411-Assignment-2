@@ -32,7 +32,7 @@ The data from the DS2 datasets is loaded in the three code chunks that follow. R
 # ╔═╡ 5f7a7820-5c1e-11ee-1767-5f554e5a74b9
 begin
 	# Change pathway as necessary
-	switzerland_t_data = readdlm("C:/Online Storage/OneDrive/2. Education/1. University of Otago/Master of Business Data Science/Papers/INFO411 - Machine Learning and Data Mining/Assignments/Assignment 2/Source data/heart+disease/processed.switzerland.data", ',', header=false)
+	switzerland_t_data = readdlm("processed.switzerland.data", ',', header=false)
 	# Raw data
 	raw_switzerland_data = DataFrame(switzerland_t_data, :auto)
 	# Renaming of columns
@@ -44,7 +44,7 @@ end;
 # ╔═╡ cd5b9656-71d5-4de9-9ca4-39db0c5bbe4b
 begin
 	# Change pathway as necessary
-	hungarian_t_data = readdlm("C:/Online Storage/OneDrive/2. Education/1. University of Otago/Master of Business Data Science/Papers/INFO411 - Machine Learning and Data Mining/Assignments/Assignment 2/Source data/heart+disease/processed.hungarian.data", ',', header=false)
+	hungarian_t_data = readdlm("processed.hungarian.data", ',', header=false)
 	# Raw data
 	raw_hungarian_data = DataFrame(hungarian_t_data, :auto)
 	# Renaming of columns
@@ -56,7 +56,7 @@ end;
 # ╔═╡ def0ad95-c2e2-4916-860f-6129df3fbcc2
 begin
 	# Change pathway as necessary
-	va_t_data = readdlm("C:/Online Storage/OneDrive/2. Education/1. University of Otago/Master of Business Data Science/Papers/INFO411 - Machine Learning and Data Mining/Assignments/Assignment 2/Source data/heart+disease/processed.va.data", ',', header=false)
+	va_t_data = readdlm("processed.va.data", ',', header=false)
 	# Raw data
 	raw_va_data = DataFrame(va_t_data, :auto)
 	# Renaming of columns
