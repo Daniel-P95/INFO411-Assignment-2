@@ -25,7 +25,7 @@ md"""
 
 # ╔═╡ 41df967b-99ec-4fa2-9479-b57c9d74dd61
 # Change pathway as necessary
-data = readdlm("statlog-heart.data.txt", ' ', header=false);
+data = readdlm("C:/Online Storage/OneDrive/2. Education/1. University of Otago/Master of Business Data Science/Papers/INFO411 - Machine Learning and Data Mining/Assignments/Assignment 2/Source data/statlog-heart.data.txt", ' ', header=false);
 
 # ╔═╡ 32bd7272-90dd-42a5-899b-7f4b67b92a8e
 raw_data = DataFrame(data, :auto)
@@ -364,7 +364,7 @@ The data from the DS2 datasets is loaded in the three code chunks that follow. R
 # ╔═╡ 5dcfee09-1818-40db-9b01-e4768e7ca608
 begin
 	# Change pathway as necessary
-	switzerland_t_data = readdlm("processed.switzerland.data", ',', header=false)
+	switzerland_t_data = readdlm("C:/Online Storage/OneDrive/2. Education/1. University of Otago/Master of Business Data Science/Papers/INFO411 - Machine Learning and Data Mining/Assignments/Assignment 2/Source data/heart+disease/processed.switzerland.data", ',', header=false)
 	# Raw data
 	raw_switzerland_data = DataFrame(switzerland_t_data, :auto)
 	# Renaming of columns
@@ -376,7 +376,7 @@ end;
 # ╔═╡ 1134788b-b113-4bde-bfd9-3eda1d699326
 begin
 	# Change pathway as necessary
-	hungarian_t_data = readdlm("processed.hungarian.data", ',', header=false)
+	hungarian_t_data = readdlm("C:/Online Storage/OneDrive/2. Education/1. University of Otago/Master of Business Data Science/Papers/INFO411 - Machine Learning and Data Mining/Assignments/Assignment 2/Source data/heart+disease/processed.hungarian.data", ',', header=false)
 	# Raw data
 	raw_hungarian_data = DataFrame(hungarian_t_data, :auto)
 	# Renaming of columns
@@ -388,7 +388,7 @@ end;
 # ╔═╡ c2ddd8f9-79fb-4357-b16b-fa673b8abb38
 begin
 	# Change pathway as necessary
-	va_t_data = readdlm("processed.va.data", ',', header=false)
+	va_t_data = readdlm("C:/Online Storage/OneDrive/2. Education/1. University of Otago/Master of Business Data Science/Papers/INFO411 - Machine Learning and Data Mining/Assignments/Assignment 2/Source data/heart+disease/processed.va.data", ',', header=false)
 	# Raw data
 	raw_va_data = DataFrame(va_t_data, :auto)
 	# Renaming of columns
