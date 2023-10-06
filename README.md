@@ -1,9 +1,7 @@
 # INFO411-Assignment-2
 A repository for University of Otago's INFO411 Assignment 2.
 ## Contributors
-Jacques Klavs and Daniel Pienaar contributed to this repository. The links to their profiles are below:
-  link1
-  link2
+[Jacques Klavs](https://github.com/jacquesklavss) and [Daniel Pienaar](https://github.com/Daniel-P95) contributed to this repository.
 ## Overview of the assignment
 The assignment required us to explore a well-known data set: the Heart Disease Data Set available from the [UCI Machine Learning Repository](https://archive.ics.uci.edu/dataset/45/heart+disease). It is a data set of 13 explanatory features (numerical and categorical) and 1 target variable: the presence of heart disease. The researchers gathered data for this set across several locations around the world, including Switzerland and Hungary. At the time of writing this 'README.md' file, the data set had 64 citations and 269 786 views.
 
