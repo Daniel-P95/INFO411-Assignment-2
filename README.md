@@ -5,7 +5,7 @@ A repository for University of Otago's INFO411 Assignment 2.
 ## Overview of the assignment
 The assignment required us to explore a well-known data set: the Heart Disease Data Set available from the [UCI Machine Learning Repository](https://archive.ics.uci.edu/dataset/45/heart+disease). It is a data set of 13 explanatory features (numerical and categorical) and 1 target variable: the presence of heart disease. The researchers gathered data for this set across several locations around the world, including Switzerland and Hungary. At the time of writing this 'README.md' file, the data set had 64 citations and 269 786 views.
 
-The exploration of this data took the form of exploratory data analysis (EDA), some basic imputation, machine learning model development, and the development of an interactive dashboard to explore some interesting figures.
+The exploration of this data took the form of exploratory data analysis (EDA), some basic imputation, machine learning model development, and the development of an interactive dashboard to explore some interesting figures. The language that was used in completing this assignment was [Julia](https://julialang.org/), using the interactive [Pluto](https://plutojl.org/) environment.
 
 This assignment was the end-of-paper submission for the INFO411 - Machine Learning and Data Mining - paper hosted by the University of Otago (New Zealand) as part of the Master of Business Data Science programme.
 ## Guide for this repository
