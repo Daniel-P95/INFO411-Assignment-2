@@ -13,8 +13,8 @@ This repository has 5 folders, which hopefully have been named adequately enough
 - The `Dashboards` folder contains a file displaying dashboards of several of our notable figures.
 - The `EDA` folder contains a file describing the data set and discusses some interesting statistical features and figures.
 - The `Imputation` folder contains some basic imputation of the data set.
-- The `Source data` folder contains the download of the data set directly from the UCI Machine Learning Repository.
 - The `Modelling` folder contains the machine learning models developed.
+- The `Source data` folder contains the download of the data set directly from the UCI Machine Learning Repository.
 
 For reference, the original assignment instructions (`INFO411 - Assignment 2 instructions.pdf`) has been included. A report (`Report.docx`) file has also been included, which was also a requirement of this assignment. It presents a summary of key findings from each of the aspects of the assignment.
 
