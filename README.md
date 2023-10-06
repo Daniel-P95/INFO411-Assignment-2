@@ -1,4 +1,4 @@
-# INFO411-Assignment-2
+# INFO411 Assignment 2
 A repository for University of Otago's INFO411 Assignment 2.
 ## Contributors
 [Jacques Klavs](https://github.com/jacquesklavss) and [Daniel Pienaar](https://github.com/Daniel-P95) contributed to this repository.
