@@ -351,7 +351,13 @@ md"""
 """
 
 # ╔═╡ cec8480f-de90-41ae-9d28-e6442835d42d
-celllist=["755f12b1-a58e-4c27-a1f3-58a73e590e25"]
+celllist=[
+			"a50f640b-5dc2-4919-a13d-6204bfffcfaf", 
+			"92a77de0-19e1-41ba-9f9c-d59c8ccee5e4",
+			"a8b7a857-b114-4017-814b-25a169106c34",
+			"916caf4a-6405-4024-a372-0ea7379d4b90",
+			"8de6eecb-39fd-412d-acec-350218f8a93b"
+		]
 
 # ╔═╡ 4d552a26-9954-4214-8f26-bcfa1787d720
 md"""
