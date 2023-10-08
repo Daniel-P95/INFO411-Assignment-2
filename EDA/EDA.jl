@@ -25,7 +25,7 @@ md"""
 
 # ╔═╡ 41df967b-99ec-4fa2-9479-b57c9d74dd61
 # Change pathway as necessary
-data = readdlm("C:/Online Storage/OneDrive/2. Education/1. University of Otago/Master of Business Data Science/Papers/INFO411 - Machine Learning and Data Mining/Assignments/Assignment 2/Source data/statlog-heart.data.txt", ' ', header=false);
+data = readdlm("statlog-heart.data.txt", ' ', header=false);
 
 # ╔═╡ 32bd7272-90dd-42a5-899b-7f4b67b92a8e
 raw_data = DataFrame(data, :auto)
@@ -133,7 +133,7 @@ Some interesting values are shown from the numerical variables:
 - The median age for the study was 55.
 - The median resting blood pressure was 130 which represents a healthy average, but the maximum was 200 which can be considered extremely dangerous.
 - The maximum heart rate achieved in the study was 202 bpm, which is representative of very high exertion.
-- The median depression induced by exercise is 0.8, which is far lower than the maximum of 6.2.
+- The median ST depression induced by exercise is 0.8, which is far lower than the maximum of 6.2.
 """
 
 # ╔═╡ 0bb83db4-93b8-429e-ba53-ce0d8ce64772
@@ -228,11 +228,11 @@ end
 
 # ╔═╡ d6ce6afa-abd3-44e0-88ae-191ad47eb244
 md"""
-The figures below are density plots of age versus resting blood pressure and depression induced by exercise relative to rest. The density plots are separated between those with and without heart disease. 
+The figures below are density plots of age versus resting blood pressure and ST depression induced by exercise relative to rest. The density plots are separated between those with and without heart disease. 
 
 In both instances, age does not seem to infleunce the presence of heart disease much. On the other hand:
 - Resting blood pressure looks to be somewhat positively correlated with the presence of heart disease.
-- High measures of depression induced by exercise relative to rest look to be very strongly correlated with the presence of heart disease.
+- High measures of ST depression induced by exercise relative to rest look to be very strongly correlated with the presence of heart disease.
 """
 
 # ╔═╡ 149828f1-10d5-4a2f-abdf-bb30552375be
@@ -326,12 +326,12 @@ Low correlation:
 - Serum Cholesterol and Exercise Induced Depression.
 Highest correlation:
 - Resting Blood Pressure and Age.
-- Exercise Induced Depression and Resting Blood Pressure.
+- Exercise Induced ST Depression and Resting Blood Pressure.
 - Serum Cholesterol and Age.
-- Exercise Induced Depression and Age.
+- Exercise Induced ST Depression and Age.
 - Maximum Heart Rate and Age.
-- Exercise Induced Depression and Maximum Heart Rate.
-What can be inferred from this is that, if we understand that Exercise Induced Depression might be a strong determining factor for the presence of heart disease, the following variables should be avoided in favour of using Depression as a variable for a predictive model:
+- Exercise Induced ST Depression and Maximum Heart Rate.
+What can be inferred from this is that, if we understand that Exercise Induced ST Depression might be a strong determining factor for the presence of heart disease, the following variables should be avoided in favour of using ST Depression as a variable for a predictive model:
 - Maximum Heart Rate.
 - Age.
 - Resting Blood Pressure.
@@ -1963,7 +1963,7 @@ version = "1.4.1+0"
 # ╟─49bcf8ab-2591-486e-8289-fba563d86d4c
 # ╠═4c8d66dd-fd45-4648-95ac-691a7b7bcaa7
 # ╟─626830fb-317d-4bd8-bd0e-fd5d3bd51694
-# ╠═adbf1720-80d1-40b2-b292-bc752c12dcdb
+# ╟─adbf1720-80d1-40b2-b292-bc752c12dcdb
 # ╟─2d17e73d-6505-4183-ac34-426e96873cb3
 # ╠═a2a3aef6-4b19-4f9b-8eb5-0bf78e549b36
 # ╟─78d3626c-32eb-43b1-addb-6309987b1783
