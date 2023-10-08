@@ -31,14 +31,14 @@ html"<button onclick='present()'>present</button>"
 
 # ╔═╡ e36f801c-696d-410f-8b73-af11f7c551ac
 md"""
-# My code space
-## Package loading
+# Dashboards of various figures produces in the completion of INFO411 Assignment 2
+## Package and data loading
+### Packages
 """
 
 # ╔═╡ c9969be3-0faf-40b8-8088-4d8c89386bdb
 md"""
-## Data loading
-### Pathways
+### Data pathways
 """
 
 # ╔═╡ 667a71ae-d116-429f-aadd-8a5038ac3189
@@ -56,7 +56,7 @@ end;
 
 # ╔═╡ 54424ee5-1ba8-4e21-a129-2466af3c224f
 md"""
-## Processing
+## Data processing
 ### DS1
 """
 
@@ -207,48 +207,156 @@ end;
 
 # ╔═╡ d3624607-8023-4af5-a46c-688b86f82865
 md"""
-## Dashboards
+## Plot and UI setup
 ### Sliders
 """
 
 # ╔═╡ 6977221a-0e0d-42a7-a867-1b9531629bdd
 begin
 	#@info PlutoRunner.currently_running_cell_id
-	slider1 = @bind B Slider(1:1:10; show_value=true);
+	slider_dplots = @bind D Slider(1:1:10; show_value=true);
 end
+
+# ╔═╡ 911d0628-170a-47d4-a59e-685d1982c785
+md"""
+### Plots
+"""
 
 # ╔═╡ 22aa18b8-0013-41bc-891b-90134dfce875
 begin 
-	set_default_plot_size(18cm, 15cm)
-	
+	# set_default_plot_size(18cm, 15cm)
+	# DS1 //
+	# Heart disease, Age, and ST Depression
 	p1 = Gadfly.plot(
 	    cleaned_data,
 	    x = :"Age",
 	    y = :"Oldpeak = ST Depression Induced by Exercise Relative to Rest",
 	    color  = :"Presence of heart disease",
 	    Scale.color_discrete_manual("#5377C9", "#DF8A56"),
-		Geom.density2d(levels = B),
+		Geom.density2d(levels = D), # Slider
 	    Guide.colorkey(pos = [0w, -0.42h]),
 		Coord.cartesian(xmin=30, xmax=80, ymin=-1, ymax=7)
 		)
-	
-	p1
+	# Heart disease, Age, and Resting Blood Pressure
+	p2 = Gadfly.plot(
+	    cleaned_data,
+	    x = :"Age",
+	    y = :"Resting Blood Pressure",
+	    color  = :"Presence of heart disease",
+	    Scale.color_discrete_manual("#5377C9", "#DF8A56"),
+		Geom.density2d(levels = D), # Slider
+	    Guide.colorkey(pos = [0w, -0.42h]),
+		)
+	# DS2 // 
+	# Heart disease, Age, and Resting Blood Pressure in VA
+	p3 = Gadfly.plot(
+	    imputed_va,
+		x = :"Age",
+	    y = :"Resting Blood Pressure",
+	    color  = :"Presence of heart disease",
+	    Scale.color_discrete_manual("#5377C9", "#DF8A56"),
+		Geom.density2d(levels = D)) # Slider
+	# Heart disease, Age, and Resting Blood Pressure in Switzerland
+	p4 = Gadfly.plot(
+	    imputed_swiss,
+	    x = :"Age",
+	    y = :"Resting Blood Pressure",
+	    color  = :"Presence of heart disease",
+	    Scale.color_discrete_manual("#5377C9", "#DF8A56"),
+		Geom.density2d(levels = D)) # Slider
+	# Heart disease, Age, and Resting Blood Pressure in Hungary
+	p5 = Gadfly.plot(
+	    imputed_hungarian,
+	    x = :"Age",
+	    y = :"Resting Blood Pressure",
+	    color  = :"Presence of heart disease",
+	    Scale.color_discrete_manual("#5377C9", "#DF8A56"),
+		Geom.density2d(levels = D)) # Slider
 end;
+
+# ╔═╡ d8ae9d2a-7493-4e84-8d67-525602cd89de
+md"""
+## Dashboards
+"""
+
+# ╔═╡ d3dad934-a4cb-47fd-b131-024a2816b11e
+md"""
+### DS1: Heart disease, Age, and ST Depression
+"""
 
 # ╔═╡ a50f640b-5dc2-4919-a13d-6204bfffcfaf
 begin
 	@info PlutoRunner.currently_running_cell_id
-	PlutoUI.ExperimentalLayout.hbox([slider1, p1])
+	PlutoUI.ExperimentalLayout.hbox([slider_dplots, p1])
+end
+
+# ╔═╡ 951bdda1-1065-4788-9f05-60647eed29a6
+md"""
+### DS1
+#### Heart disease, Age, and Resting Blood Pressure
+"""
+
+# ╔═╡ 92a77de0-19e1-41ba-9f9c-d59c8ccee5e4
+begin
+	@info PlutoRunner.currently_running_cell_id
+	PlutoUI.ExperimentalLayout.hbox([slider_dplots, p2])
+end
+
+# ╔═╡ 1f9c8e7f-22c8-462b-93cb-7e3a5f7d9dc2
+md"""
+### DS2
+#### Heart disease, Age, and Resting Blood Pressure in VA
+"""
+
+# ╔═╡ a8b7a857-b114-4017-814b-25a169106c34
+begin
+	@info PlutoRunner.currently_running_cell_id
+	PlutoUI.ExperimentalLayout.hbox([slider_dplots, p3])
+end
+
+# ╔═╡ ac8a98e8-d9b8-473d-88b9-11fb04be855e
+md"""
+#### DS2: Heart disease, Age, and Resting Blood Pressure in Switzerland
+"""
+
+# ╔═╡ 916caf4a-6405-4024-a372-0ea7379d4b90
+begin
+	@info PlutoRunner.currently_running_cell_id
+	PlutoUI.ExperimentalLayout.hbox([slider_dplots, p4])
+end
+
+# ╔═╡ 0e5f76d9-5b4f-4755-93c5-c6b68b7325b4
+md"""
+#### DS2: Heart disease, Age, and Resting Blood Pressure in Hungary
+"""
+
+# ╔═╡ 8de6eecb-39fd-412d-acec-350218f8a93b
+begin
+	@info PlutoRunner.currently_running_cell_id
+	PlutoUI.ExperimentalLayout.hbox([slider_dplots, p5])
 end
 
 # ╔═╡ 0d7e16d7-567e-419e-8dcf-7f3c0ca4abc3
-md""" ### Get URL """
+md""" 
+## Dashboard URLs 
+### Notebook
+"""
 
 # ╔═╡ 513cf770-31e3-41fc-b1fb-6087235c3dc1
 notebook = PlutoRunner.notebook_id[] |> string
 
+# ╔═╡ a5820712-8196-41e1-bbf6-436bd8916a12
+md"""
+### Importing dashboards
+"""
+
 # ╔═╡ cec8480f-de90-41ae-9d28-e6442835d42d
 celllist=["755f12b1-a58e-4c27-a1f3-58a73e590e25"]
+
+# ╔═╡ 4d552a26-9954-4214-8f26-bcfa1787d720
+md"""
+### Dashboard deployment
+"""
 
 # ╔═╡ debfdb5f-4172-479b-bee9-712b1d57e178
 dash_final_url="http://localhost:1234/edit?" * "id=$notebook&" * join(["isolated_cell_id=$cell" for cell in celllist], "&")
@@ -1876,18 +1984,31 @@ version = "1.4.1+1"
 # ╠═f646c7c3-117d-4433-946e-de1b6b7cff34
 # ╠═22c5eefe-8be8-4cb4-be5c-9be721eaeef5
 # ╠═b261e33a-f5d2-4ab3-b11e-d4fb55976028
-# ╠═1597ae95-4046-4f7c-9444-cf339969d4cf
+# ╟─1597ae95-4046-4f7c-9444-cf339969d4cf
 # ╠═06b6ceb6-0daf-4d6e-b7d9-300552926250
 # ╠═3cece5e8-678f-4bf4-9449-98b3c95f9bdc
 # ╠═d64c843b-3dfd-4573-b468-5d6845cc6c13
 # ╠═aa32d25b-b963-4971-a447-7c5b2ee4756d
-# ╠═d3624607-8023-4af5-a46c-688b86f82865
+# ╟─d3624607-8023-4af5-a46c-688b86f82865
 # ╠═6977221a-0e0d-42a7-a867-1b9531629bdd
+# ╟─911d0628-170a-47d4-a59e-685d1982c785
 # ╠═22aa18b8-0013-41bc-891b-90134dfce875
+# ╟─d8ae9d2a-7493-4e84-8d67-525602cd89de
+# ╟─d3dad934-a4cb-47fd-b131-024a2816b11e
 # ╠═a50f640b-5dc2-4919-a13d-6204bfffcfaf
+# ╟─951bdda1-1065-4788-9f05-60647eed29a6
+# ╠═92a77de0-19e1-41ba-9f9c-d59c8ccee5e4
+# ╟─1f9c8e7f-22c8-462b-93cb-7e3a5f7d9dc2
+# ╠═a8b7a857-b114-4017-814b-25a169106c34
+# ╟─ac8a98e8-d9b8-473d-88b9-11fb04be855e
+# ╠═916caf4a-6405-4024-a372-0ea7379d4b90
+# ╟─0e5f76d9-5b4f-4755-93c5-c6b68b7325b4
+# ╠═8de6eecb-39fd-412d-acec-350218f8a93b
 # ╟─0d7e16d7-567e-419e-8dcf-7f3c0ca4abc3
 # ╠═513cf770-31e3-41fc-b1fb-6087235c3dc1
+# ╟─a5820712-8196-41e1-bbf6-436bd8916a12
 # ╠═cec8480f-de90-41ae-9d28-e6442835d42d
+# ╟─4d552a26-9954-4214-8f26-bcfa1787d720
 # ╠═debfdb5f-4172-479b-bee9-712b1d57e178
 # ╠═a3876b10-d63c-458c-99bf-6e9c1af501a9
 # ╟─00000000-0000-0000-0000-000000000001
