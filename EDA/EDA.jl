@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.27
+# v0.19.9
 
 using Markdown
 using InteractiveUtils
@@ -8,7 +8,7 @@ using InteractiveUtils
 using DelimitedFiles, DataFrames, CategoricalArrays
 
 # ╔═╡ ef1dc870-2432-4b74-af14-3d2e1a805a46
-using Gadfly, Compose, ColorSchemes, Distributions, Plots, Statistics, StatsPlots
+using Gadfly, Compose, ColorSchemes, Distributions, Plots, Statistics, StatsPlots, LinearAlgebra, StatsPlots, PlotlyJS
 
 # ╔═╡ a2a3aef6-4b19-4f9b-8eb5-0bf78e549b36
 using Impute: DeclareMissings, apply, Impute
@@ -79,7 +79,7 @@ begin
 	renamed_raw_data[!, 2] = map(x -> x == 1.0 ? "Male" : "Female", renamed_raw_data[!, 2])
 	renamed_raw_data[!, 6] = map(x -> x == 1.0 ? "Yes" : "No", renamed_raw_data[!, 6])
 	renamed_raw_data[!, 9] = map(x -> x == 1.0 ? "Yes" : "No", renamed_raw_data[!, 9])
-	renamed_raw_data[!, 14] = map(x -> x == 1.0 ? "No" : "Yes", renamed_raw_data[!, 14])
+	renamed_raw_data[!, 14] = map(x -> x == 1.0 ? "Yes" : "No", renamed_raw_data[!, 14])
 	# Catergorical data designation
 	renamed_raw_data[!,2] = categorical(renamed_raw_data[:,2], ordered = false)
 	renamed_raw_data[!,6] = categorical(renamed_raw_data[:,6], ordered = false)
@@ -151,8 +151,8 @@ The figure below shows a Violin plot of the male and female participants accordi
 
 # ╔═╡ 8f465e10-de67-490d-a9f1-d3434f13b1a3
 begin
-	violin(["DS1"], cleaned_data[cleaned_data."Sex" .== "Male",:Age], side = :left, color = "#5377C9", label = "Male", ylabel = "Age")
-	violin!(["DS1"], cleaned_data[cleaned_data."Sex" .== "Female",:Age], side = :right, color = "#DF8A56", label = "Female")
+	StatsPlots.violin(["DS1"], cleaned_data[cleaned_data."Sex" .== "Male",:Age], side = :left, color = "#5377C9", label = "Male", ylabel = "Age")
+	StatsPlots.violin!(["DS1"], cleaned_data[cleaned_data."Sex" .== "Female",:Age], side = :right, color = "#DF8A56", label = "Female")
 end
 
 # ╔═╡ 3e43d464-ce46-4d0c-b2bf-9cda5a478493
@@ -194,6 +194,65 @@ begin
 	Guide.ylabel("Frequency", orientation=:vertical));
 	
 	gridstack([p01 p02; p03 p04])
+end
+
+# ╔═╡ 45ce725f-7d92-4d50-8fa3-07bccd867f8f
+begin
+			sizes = map(x -> x == "No" ? 3 : 4, cleaned_data[!, 14])
+			sizes2 = map(x -> x == "No" ? 1 : 3, cleaned_data[!, 14])
+			tra = map(x -> x == "No" ? 0.5 : 0.9, cleaned_data[!, 14])
+			colors = map(x -> x == "Yes" ? :orangered : :steelblue, cleaned_data[!, 14])
+end;
+
+# ╔═╡ 85abad67-e46b-4a89-a97b-744428707331
+md"""
+There appears to be slight correlation between max HR and age, those who are younger tend to have a higher max HR whcih is expected considering they have younger bodies.
+
+There also appears to be two rough clusters, those with high max HR and low age with heart disease and those with higher age and lower max HR with no disease.
+"""
+
+# ╔═╡ 855082f7-f3b1-438b-af13-18b0df8ac534
+	pa = Plots.scatter(cleaned_data[:,8], cleaned_data[:,1], color = colors, group=cleaned_data[:, 14], ms=sizes, ma = tra, legend=:topright, xlabel = "Max HR", ylabel = "Age",
+	xlim = (50, 200), ylim = (20,80), title = "Max HR vs Age")
+
+# ╔═╡ 8a3a12ba-73f5-406f-ba0d-656e0447bd7f
+md"""
+Shown here is cholesterol vs resting blood pressure, there does not appear to be any correlation but there is possibly two rough groups.
+"""
+
+# ╔═╡ fd6022a4-12d6-4f0d-af07-bd9c787f28ba
+	pb = Plots.scatter(cleaned_data[:,4], cleaned_data[:,5], group=cleaned_data[:, 14], ms=sizes, ma = tra, legend=:topright, ylabel = "Cholesterol", xlabel = "Resting Blood Pressure",
+	xlim = (75,200), ylim = (50,650), title = "Cholesterol vs Resting Blood Pressure", color = colors)
+
+# ╔═╡ 6774116f-c927-4ecb-87ab-6420e7eb8f93
+md"""
+Seen below is a PCA plot with the first 3 PCA components, to aid in visualization of the continuous variables (Cholesterol, RBP, Age, OP, HR)
+"""
+
+# ╔═╡ c04b9fc6-6b9b-4a3e-8c89-758d3b3da493
+X2 = cleaned_data[:,[1,4,5,8,10]];
+
+# ╔═╡ 4891e12f-3947-4d47-995e-5cca5dda6d76
+begin
+	X4=Matrix(X2)'
+	m2 = mean(X4, dims=2)
+	N = size(X4)[2]
+	R = (X4 .- m2)*(X4 .- m2)' ./ (N-1.0)
+	F = eigen(R, sortby = x -> -abs(x))
+	W = F.vectors 
+	y2 = (W[:,1:5])'*X4
+	x = DataFrame(y2[1:3,:]', :auto)
+end;
+
+# ╔═╡ 46eac3ab-86f9-4de0-85ca-945cee1552ad
+begin 
+	plotlyjs()
+	StatsPlots.scatter(
+	    x[:, 1],
+	    x[:, 2],
+	    x[:, 3],
+	    group=cleaned_data[:, 14],
+	    mode="markers", xlabel = "PCA1", ylabel = "PCA2", zlabel = "PCA3", legend = :topleft,  ms = sizes2, title = "PCA1 vs PCA2 vs PCA3", color = colors)
 end
 
 # ╔═╡ 50cd40ac-ede0-4035-be5c-f29b20d89ecb
@@ -345,7 +404,7 @@ begin
 	c_labels = ["Age", "Resting BP", "Serum Cholesterol", "Max HR", "ST depression"]
 	M = cor(Matrix(cleaned_data[!,cols])) 
 	(n,m) = size(M)
-	heatmap(M, fc=cgrad([:white,:dodgerblue4]), xticks=(1:m,c_labels), xrot=90, yticks=(1:m,c_labels), yflip=true)
+	StatsPlots.heatmap(M, fc=cgrad([:white,:dodgerblue4]), xticks=(1:m,c_labels), xrot=90, yticks=(1:m,c_labels), yflip=true)
 	annotate!([(j, i, Plots.text(round(M[i,j],digits=3), 8,"Computer Modern",:black)) for i in 1:n for j in 1:m])
 end
 
@@ -364,7 +423,7 @@ The data from the DS2 datasets is loaded in the three code chunks that follow. R
 # ╔═╡ 5dcfee09-1818-40db-9b01-e4768e7ca608
 begin
 	# Change pathway as necessary
-	switzerland_t_data = readdlm("C:/Online Storage/OneDrive/2. Education/1. University of Otago/Master of Business Data Science/Papers/INFO411 - Machine Learning and Data Mining/Assignments/Assignment 2/Source data/heart+disease/processed.switzerland.data", ',', header=false)
+	switzerland_t_data = readdlm("processed.switzerland.data", ',', header=false)
 	# Raw data
 	raw_switzerland_data = DataFrame(switzerland_t_data, :auto)
 	# Renaming of columns
@@ -376,7 +435,7 @@ end;
 # ╔═╡ 1134788b-b113-4bde-bfd9-3eda1d699326
 begin
 	# Change pathway as necessary
-	hungarian_t_data = readdlm("C:/Online Storage/OneDrive/2. Education/1. University of Otago/Master of Business Data Science/Papers/INFO411 - Machine Learning and Data Mining/Assignments/Assignment 2/Source data/heart+disease/processed.hungarian.data", ',', header=false)
+	hungarian_t_data = readdlm("processed.hungarian.data", ',', header=false)
 	# Raw data
 	raw_hungarian_data = DataFrame(hungarian_t_data, :auto)
 	# Renaming of columns
@@ -388,7 +447,7 @@ end;
 # ╔═╡ c2ddd8f9-79fb-4357-b16b-fa673b8abb38
 begin
 	# Change pathway as necessary
-	va_t_data = readdlm("C:/Online Storage/OneDrive/2. Education/1. University of Otago/Master of Business Data Science/Papers/INFO411 - Machine Learning and Data Mining/Assignments/Assignment 2/Source data/heart+disease/processed.va.data", ',', header=false)
+	va_t_data = readdlm("processed.va.data", ',', header=false)
 	# Raw data
 	raw_va_data = DataFrame(va_t_data, :auto)
 	# Renaming of columns
@@ -410,19 +469,19 @@ These variables are:
 
 # ╔═╡ 7c3d8e13-edf5-4f8c-b340-aabd3f44e8d5
 begin
-	p11 = heatmap(
+	p11 = StatsPlots.heatmap(
 	        1:14, 1:200, Matrix{Bool}(ismissing.(named_va)),
 	        color=:grays, xticks = false, legend = false
 			);
 			annotate!(0.5,215, Plots.text("Va", 10, :left, :black))
 	   
-	p12 = heatmap(
+	p12 = StatsPlots.heatmap(
 	        1:14, 1:294, Matrix{Bool}(ismissing.(named_hungarian)),
 	        color=:grays, xticks = false, legend = false
 			);
 			annotate!(0.5,325, Plots.text("Hungarian", 10, :left, :black))
 	
-	p13 = heatmap(
+	p13 = StatsPlots.heatmap(
 	        1:14, 1:123, Matrix{Bool}(ismissing.(named_switzerland)),
 	        xlabel="Variables",
 	        color=:grays, xticks = (1:14), legend = false
@@ -443,6 +502,8 @@ DelimitedFiles = "8bb1440f-4735-579b-a4ab-409b98df4dab"
 Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
 Gadfly = "c91e804a-d5a3-530f-b6f0-dfbca275c004"
 Impute = "f7bf1975-0170-51b9-8c5f-a992d46b9575"
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+PlotlyJS = "f0f68f2c-4968-5e81-91da-67840de0976a"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 StatsPlots = "f3b207a7-027a-5e70-b257-86293d7955fd"
@@ -456,6 +517,7 @@ DelimitedFiles = "~1.9.1"
 Distributions = "~0.25.100"
 Gadfly = "~1.4.0"
 Impute = "~0.6.11"
+PlotlyJS = "~0.18.10"
 Plots = "~1.39.0"
 StatsPlots = "~0.15.6"
 """
@@ -466,7 +528,7 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 julia_version = "1.9.2"
 manifest_format = "2.0"
-project_hash = "ad23862da812602ee2bac7bb25607e50a6f83d07"
+project_hash = "53fda1ca567f1b6048be973a363bde8db8e5b430"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -508,6 +570,12 @@ version = "3.5.1+1"
 [[deps.Artifacts]]
 uuid = "56f22d72-fd6d-98f1-02f0-08ddc0907c33"
 
+[[deps.AssetRegistry]]
+deps = ["Distributed", "JSON", "Pidfile", "SHA", "Test"]
+git-tree-sha1 = "b25e88db7944f98789130d7b503276bc34bc098e"
+uuid = "bf4720bc-e11a-5d0c-854e-bdca1663c893"
+version = "0.1.0"
+
 [[deps.AxisAlgorithms]]
 deps = ["LinearAlgebra", "Random", "SparseArrays", "WoodburyMatrices"]
 git-tree-sha1 = "66771c8d21c8ff5e3a93379480a2307ac36863f7"
@@ -526,6 +594,12 @@ uuid = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
 git-tree-sha1 = "43b1a4a8f797c1cddadf60499a8a077d4af2cd2d"
 uuid = "d1d4a3ce-64b1-5f1a-9ba4-7e7e69966f35"
 version = "0.1.7"
+
+[[deps.Blink]]
+deps = ["Base64", "Distributed", "HTTP", "JSExpr", "JSON", "Lazy", "Logging", "MacroTools", "Mustache", "Mux", "Pkg", "Reexport", "Sockets", "WebIO"]
+git-tree-sha1 = "b1c61fd7e757c7e5ca6521ef41df8d929f41e3af"
+uuid = "ad839575-38b3-5650-b840-f874b8c74a25"
+version = "0.12.8"
 
 [[deps.Bzip2_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
@@ -839,6 +913,12 @@ git-tree-sha1 = "aa31987c2ba8704e23c6c8ba8a4f769d5d7e4f91"
 uuid = "559328eb-81f9-559d-9380-de523a88c83c"
 version = "1.0.10+0"
 
+[[deps.FunctionalCollections]]
+deps = ["Test"]
+git-tree-sha1 = "04cb9cfaa6ba5311973994fe3496ddec19b6292a"
+uuid = "de31a74c-ac4f-5751-b3fd-e18cd04993ca"
+version = "0.5.0"
+
 [[deps.Future]]
 deps = ["Random"]
 uuid = "9fa8497b-333b-5362-9e8d-4d0656e87820"
@@ -907,6 +987,12 @@ deps = ["Test"]
 git-tree-sha1 = "de4a6f9e7c4710ced6838ca906f81905f7385fd6"
 uuid = "a1b4810d-1bce-5fbd-ac56-80944d57a21f"
 version = "0.2.0"
+
+[[deps.Hiccup]]
+deps = ["MacroTools", "Test"]
+git-tree-sha1 = "6187bb2d5fcbb2007c39e7ac53308b0d371124bd"
+uuid = "9fb69e20-1954-56bb-a84f-559cc56a8ff7"
+version = "0.2.2"
 
 [[deps.HypergeometricFunctions]]
 deps = ["DualNumbers", "LinearAlgebra", "OpenLibm_jll", "SpecialFunctions"]
@@ -979,6 +1065,12 @@ git-tree-sha1 = "7e5d6779a1e09a36db2a7b6cff50942a0a7d0fca"
 uuid = "692b3bcd-3c85-4b1f-b108-f13ce0eb3210"
 version = "1.5.0"
 
+[[deps.JSExpr]]
+deps = ["JSON", "MacroTools", "Observables", "WebIO"]
+git-tree-sha1 = "b413a73785b98474d8af24fd4c8a975e31df3658"
+uuid = "97c1335a-c9c5-57fe-bc5d-ec35cebe8660"
+version = "0.5.4"
+
 [[deps.JSON]]
 deps = ["Dates", "Mmap", "Parsers", "Unicode"]
 git-tree-sha1 = "31e996f0a15c7b280ba9f76636b3ff9e2ae58c9a"
@@ -996,6 +1088,12 @@ deps = ["Base64", "Logging", "Media", "Profile"]
 git-tree-sha1 = "07cb43290a840908a771552911a6274bc6c072c7"
 uuid = "e5e0dc1b-0480-54bc-9374-aad01c23163d"
 version = "0.8.4"
+
+[[deps.Kaleido_jll]]
+deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
+git-tree-sha1 = "43032da5832754f58d14a91ffbe86d5f176acda9"
+uuid = "f7e6163d-2fa5-5f23-b69c-1db539e41963"
+version = "0.2.1+0"
 
 [[deps.KernelDensity]]
 deps = ["Distributions", "DocStringExtensions", "FFTW", "Interpolations", "StatsBase"]
@@ -1045,6 +1143,12 @@ version = "0.16.1"
     [deps.Latexify.weakdeps]
     DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
     SymEngine = "123dc426-2d89-5057-bbad-38513e3affd8"
+
+[[deps.Lazy]]
+deps = ["MacroTools"]
+git-tree-sha1 = "1370f8202dac30758f3c345f9909b97f53d87d3f"
+uuid = "50d2b5c4-7a5e-59d5-8109-a42b560f39c0"
+version = "0.15.1"
 
 [[deps.LazyArtifacts]]
 deps = ["Artifacts", "Pkg"]
@@ -1212,6 +1316,18 @@ git-tree-sha1 = "68bf5103e002c44adfd71fea6bd770b3f0586843"
 uuid = "6f286f6a-111f-5878-ab1e-185364afe411"
 version = "0.10.2"
 
+[[deps.Mustache]]
+deps = ["Printf", "Tables"]
+git-tree-sha1 = "821e918c170ead5298ff84bffee41dd28929a681"
+uuid = "ffc61752-8dc7-55ee-8c37-f3e9cdd09e70"
+version = "1.0.17"
+
+[[deps.Mux]]
+deps = ["AssetRegistry", "Base64", "HTTP", "Hiccup", "MbedTLS", "Pkg", "Sockets"]
+git-tree-sha1 = "0bdaa479939d2a1f85e2f93e38fbccfcb73175a5"
+uuid = "a975b10e-0019-58db-a62f-e48ff68538c9"
+version = "1.0.1"
+
 [[deps.NaNMath]]
 deps = ["OpenLibm_jll"]
 git-tree-sha1 = "0877504529a3e5c3343c6f8b4c0381e57e4387e4"
@@ -1301,11 +1417,23 @@ git-tree-sha1 = "67eae2738d63117a196f497d7db789821bce61d1"
 uuid = "90014a1f-27ba-587c-ab20-58faa44d9150"
 version = "0.11.17"
 
+[[deps.Parameters]]
+deps = ["OrderedCollections", "UnPack"]
+git-tree-sha1 = "34c0e9ad262e5f7fc75b10a9952ca7692cfc5fbe"
+uuid = "d96e819e-fc66-5662-9728-84c9c7592b0a"
+version = "0.12.3"
+
 [[deps.Parsers]]
 deps = ["Dates", "PrecompileTools", "UUIDs"]
 git-tree-sha1 = "716e24b21538abc91f6205fd1d8363f39b442851"
 uuid = "69de0a69-1ddd-5017-9359-2bf0b02dc9f0"
 version = "2.7.2"
+
+[[deps.Pidfile]]
+deps = ["FileWatching", "Test"]
+git-tree-sha1 = "2d8aaf8ee10df53d0dfb9b8ee44ae7c04ced2b03"
+uuid = "fa939f87-e72e-5be4-a000-7fc836dbe307"
+version = "1.3.0"
 
 [[deps.Pipe]]
 git-tree-sha1 = "6842804e7867b115ca9de748a0cf6b364523c16d"
@@ -1334,6 +1462,18 @@ deps = ["ColorSchemes", "Colors", "Dates", "PrecompileTools", "Printf", "Random"
 git-tree-sha1 = "f92e1315dadf8c46561fb9396e525f7200cdc227"
 uuid = "995b91a9-d308-5afd-9ec6-746e21dbc043"
 version = "1.3.5"
+
+[[deps.PlotlyBase]]
+deps = ["ColorSchemes", "Dates", "DelimitedFiles", "DocStringExtensions", "JSON", "LaTeXStrings", "Logging", "Parameters", "Pkg", "REPL", "Requires", "Statistics", "UUIDs"]
+git-tree-sha1 = "56baf69781fc5e61607c3e46227ab17f7040ffa2"
+uuid = "a03496cd-edff-5a9b-9e67-9cda94a718b5"
+version = "0.8.19"
+
+[[deps.PlotlyJS]]
+deps = ["Base64", "Blink", "DelimitedFiles", "JSExpr", "JSON", "Kaleido_jll", "Markdown", "Pkg", "PlotlyBase", "REPL", "Reexport", "Requires", "WebIO"]
+git-tree-sha1 = "7452869933cd5af22f59557390674e8679ab2338"
+uuid = "f0f68f2c-4968-5e81-91da-67840de0976a"
+version = "0.18.10"
 
 [[deps.Plots]]
 deps = ["Base64", "Contour", "Dates", "Downloads", "FFMPEG", "FixedPointNumbers", "GR", "JLFzf", "JSON", "LaTeXStrings", "Latexify", "LinearAlgebra", "Measures", "NaNMath", "Pkg", "PlotThemes", "PlotUtils", "PrecompileTools", "Preferences", "Printf", "REPL", "Random", "RecipesBase", "RecipesPipeline", "Reexport", "RelocatableFolders", "Requires", "Scratch", "Showoff", "SparseArrays", "Statistics", "StatsBase", "UUIDs", "UnicodeFun", "UnitfulLatexify", "Unzip"]
@@ -1634,6 +1774,11 @@ version = "1.5.0"
 deps = ["Random", "SHA"]
 uuid = "cf7118a7-6976-5b1a-9a39-7adc72f591a4"
 
+[[deps.UnPack]]
+git-tree-sha1 = "387c1f73762231e86e0c9c5443ce3b4a0a9a0c2b"
+uuid = "3a884ed6-31ef-47d7-9d2a-63182c4928ed"
+version = "1.0.2"
+
 [[deps.Unicode]]
 uuid = "4ec0a83e-493e-50e2-b9ac-8f72acf5a8f5"
 
@@ -1685,6 +1830,18 @@ deps = ["DataAPI", "InlineStrings", "Parsers"]
 git-tree-sha1 = "b1be2855ed9ed8eac54e5caff2afcdb442d52c23"
 uuid = "ea10d353-3f73-51f8-a26c-33c1cb351aa5"
 version = "1.4.2"
+
+[[deps.WebIO]]
+deps = ["AssetRegistry", "Base64", "Distributed", "FunctionalCollections", "JSON", "Logging", "Observables", "Pkg", "Random", "Requires", "Sockets", "UUIDs", "WebSockets", "Widgets"]
+git-tree-sha1 = "0eef0765186f7452e52236fa42ca8c9b3c11c6e3"
+uuid = "0f1e0344-ec1d-5b48-a673-e5cf874b6c29"
+version = "0.8.21"
+
+[[deps.WebSockets]]
+deps = ["Base64", "Dates", "HTTP", "Logging", "Sockets"]
+git-tree-sha1 = "4162e95e05e79922e44b9952ccbc262832e4ad07"
+uuid = "104b5d7c-a370-577a-8038-80a2059c5097"
+version = "1.6.0"
 
 [[deps.Widgets]]
 deps = ["Colors", "Dates", "Observables", "OrderedCollections"]
@@ -1955,13 +2112,22 @@ version = "1.4.1+0"
 # ╟─d6efb7a6-b061-4eef-9183-8aa43919a905
 # ╠═8f465e10-de67-490d-a9f1-d3434f13b1a3
 # ╟─3e43d464-ce46-4d0c-b2bf-9cda5a478493
-# ╠═79e9247c-2ba7-458e-aac5-b10c9364d429
+# ╟─79e9247c-2ba7-458e-aac5-b10c9364d429
+# ╠═45ce725f-7d92-4d50-8fa3-07bccd867f8f
+# ╟─85abad67-e46b-4a89-a97b-744428707331
+# ╠═855082f7-f3b1-438b-af13-18b0df8ac534
+# ╠═8a3a12ba-73f5-406f-ba0d-656e0447bd7f
+# ╠═fd6022a4-12d6-4f0d-af07-bd9c787f28ba
+# ╟─6774116f-c927-4ecb-87ab-6420e7eb8f93
+# ╠═c04b9fc6-6b9b-4a3e-8c89-758d3b3da493
+# ╠═4891e12f-3947-4d47-995e-5cca5dda6d76
+# ╟─46eac3ab-86f9-4de0-85ca-945cee1552ad
 # ╟─50cd40ac-ede0-4035-be5c-f29b20d89ecb
-# ╠═ebe1d7bc-1502-47f1-a07a-570ab76acf93
+# ╟─ebe1d7bc-1502-47f1-a07a-570ab76acf93
 # ╟─d6ce6afa-abd3-44e0-88ae-191ad47eb244
-# ╠═149828f1-10d5-4a2f-abdf-bb30552375be
+# ╟─149828f1-10d5-4a2f-abdf-bb30552375be
 # ╟─49bcf8ab-2591-486e-8289-fba563d86d4c
-# ╠═4c8d66dd-fd45-4648-95ac-691a7b7bcaa7
+# ╟─4c8d66dd-fd45-4648-95ac-691a7b7bcaa7
 # ╟─626830fb-317d-4bd8-bd0e-fd5d3bd51694
 # ╟─adbf1720-80d1-40b2-b292-bc752c12dcdb
 # ╟─2d17e73d-6505-4183-ac34-426e96873cb3
